@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+build/
+.idea
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -43,7 +46,7 @@ jspm_packages/
 
 # TypeScript v1 declaration files
 typings/
-
+types/
 # TypeScript cache
 *.tsbuildinfo
 

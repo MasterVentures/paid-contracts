@@ -13,7 +13,7 @@
     "test": "truffle test",
     "generate-types": "typechain --target=ethers-v4 'build/contracts/*.json'",
     "typecheck": "tsc --noEmit",
-    "compile": "truffle compile",
+    "compile": "solang_linux --target substrate contracts/**/*.sol",
     "migrate": "truffle migrate --reset --network development",
     "preinstall": "npx npm-force-resolutions"
   },
