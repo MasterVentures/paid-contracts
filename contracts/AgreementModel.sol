@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AgreementModel {
     struct Content {
-        bytes32 reference;
+        bytes32 reference; // multiaddress
         string network;
         bytes signature;
         bytes digest;
@@ -13,10 +13,11 @@ contract AgreementModel {
     struct AgreementDocument {
         address partyOneSignatory;
         address partyTwoSignatory;
-        uint signed;
+        bool signed;
         bool isEscrowed;
         uint validUntil;
         RuleSet rules;
+        Content file;
     }
     struct RuleSet {
         ;
