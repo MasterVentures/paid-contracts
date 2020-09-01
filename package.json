@@ -14,14 +14,13 @@
     "generate-types": "typechain --target=ethers-v4 'build/contracts/*.json'",
     "typecheck": "tsc --noEmit",
     "compile": "solang_linux --target substrate contracts/**/*.sol",
-    "migrate": "truffle migrate --reset --network development",
-    "preinstall": "npx npm-force-resolutions"
+    "migrate": "truffle migrate --reset --network development"
   },
   "resolutions": {
     "scrypt.js": "0.3.0"
   },
   "author": "",
-  "license": "ISC",  
+  "license": "ISC",
   "devDependencies": {
     "@gnosis.pm/mock-contract": "^3.0.8",
     "@openzeppelin/contracts": "^3.1.0",
