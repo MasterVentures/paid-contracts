@@ -3,21 +3,40 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract AgreementModel {
+contract AgreementModels {
+    struct Party {
+        address signatory;
+    }
+
+    struct Terms {
+       Clause[]  clauses;
+    }
+
+    // if X complies then a
+    // if X does not comply b
+    struct Clause {
+        address party;
+        uint x; // Subject{symbol,p}
+        bytes32 operator; // && || > < ===
+        uint y;
+        uint expiry;
+        bytes32 oracleType; // token price
+    }
+
     struct Content {
         bytes32 reference; // multiaddress
-        string network;
         bytes signature;
         bytes digest;
     }
     struct AgreementDocument {
-        address partyOneSignatory;
-        address partyTwoSignatory;
+        Party partyASignatory;
+        Party partyBSignatory;
         bool signed;
-        bool isEscrowed;
+        bool escrowed;
         uint validUntil;
         RuleSet rules;
         Content file;
+        Terms terms;
     }
     struct RuleSet {
         ;
