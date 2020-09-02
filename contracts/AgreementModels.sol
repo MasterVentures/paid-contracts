@@ -24,7 +24,7 @@ contract AgreementModels {
     }
 
     struct Content {
-        bytes32 reference; // multiaddress
+        string multiaddressReference; // multiaddress
         bytes signature;
         bytes digest;
     }
@@ -34,11 +34,7 @@ contract AgreementModels {
         bool signed;
         bool escrowed;
         uint validUntil;
-        RuleSet rules;
         Content file;
         Terms terms;
-    }
-    struct RuleSet {
-        ;
     }
 }
