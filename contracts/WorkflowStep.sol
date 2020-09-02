@@ -2,20 +2,27 @@ pragma solidity ^0.6.10;
 
 contract WorkflowStep {
 
-    using EnumerableSet for EnumerableSet.UintSet;
-    using EnumerableSet for EnumerableSet.AddressSet;
 
-    event LogWorkflowStepStart(address indexed sender, uint256 indexed current, uint256 indexed actorId);
-    event LogWorkflowStepCompleted(address indexed recipient, uint256 indexed next, uint256 indexed actorId, uint256  documentId);
+    event WorkflowStepStart(
+        address indexed sender, 
+        uint indexed current, 
+        uint indexed actorId
+    );
+    event WorkflowStepCompleted(
+        address indexed recipient, 
+        uint indexed next, 
+        uint indexed actorId, 
+        uint  documentId
+    );
 
-    struct WStep {
-        uint256 currentActor;
-        uint256 current;
-        uint256 next;
-        uint256 forkId;
-        uint256 mappingType;
-        bytes recipientValidationsBytes;
-        bytes senderValidationsBytes;
-        bytes statusChecksBytes;
+    struct Step {
+        // Alice or Bob
+        uint partyActor;
+        // Current step
+        uint currentStep;
+        // Next step
+        uint nextStep;
+        // Fork step
+        uint forkStep;
     }
 }
