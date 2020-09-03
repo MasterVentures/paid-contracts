@@ -24,5 +24,7 @@ contract WorkflowStep {
         uint nextStep;
         // Fork step
         uint forkStep;
+
+        address extension;
     }
 }
