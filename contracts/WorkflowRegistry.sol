@@ -3,14 +3,24 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AgreementModels.sol";
+import "./StepTransition.sol";
+
 // 
 // @dev Contains agreements templates or documents created by user
 // 
 contract WorkflowRegistry {
-    event AgreementCreated(uint indexed id);
-    event AgreementModified(uint indexed id);
-    event AgreementDisputed(uint indexed id);
-    event AgreementClosed(uint indexed id);
+    event WorkflowCreated(bytes32 indexed workflowId, uint[] stepIds);
+    event WorkflowStepStart(
+        address indexed sender, 
+        uint indexed current, 
+        uint indexed actorId
+    );
+    event WorkflowStepCompleted(
+        address indexed recipient, 
+        uint indexed next, 
+        uint indexed actorId, 
+        uint  documentId
+    );
 
     address subowner;
     address delegatedOwner;
@@ -19,8 +29,21 @@ contract WorkflowRegistry {
     mapping (uint => mapping (uint => uint)) public findNext;
 
     uint public workflowCount;
-    mapping (bytes32 => mapping(uint => WorkflowStep)) public workflows;
+    mapping (bytes32 => mapping(uint => Step)) public workflows;
     mapping (bytes32 => uint) public workflowStepsCount;
+
+    struct Step {
+        // Alice or Bob
+        uint partyActor;
+        // Current step
+        uint currentStep;
+        // Next step
+        uint nextStep;
+        // Fork step
+        uint forkStep;
+        // extension to ue
+        address extension;
+    }
 
     constructor() public {
     }
@@ -29,38 +52,44 @@ contract WorkflowRegistry {
     // With states and steps to execute
     // Add msg.sender as owner
     // Each step/status pair gets and id
-    /*
-        Generates the "decision tree" by using the WorkflowStep and uint[] 
-    */
     function createWorkflow(
         bytes32 workflowId,
         uint[] memory parties, 
-        WorkflowStep[] memory steps, 
-        StepTransition[] memory transitions) public nonReentrant returns (uint[] memory stepIds) {
+        Step[] memory steps, 
+        StepTransition[] memory transitions) 
+        public returns (uint[] memory stepIds) {
         // TODO: link with DID eth
         require(msg.sender == delegatedOwner, "INVALID_USER");
 
         for (uint i = 0; i < steps.length; i++) {
-            uint temp = workflowStepsCount[workflowId];
-            workflows[workflowId][temp] = WorkflowStep({
+            uint wfStepId = workflowStepsCount[workflowId];
+            workflows[workflowId][wfStepId] = Step({
                 partyActor: steps[i].partyActor,
                 currentStep: steps[i].currentStep,
                 nextStep: steps[i].nextStep,
-                forkStep: steps[i].forkStep
+                forkStep: steps[i].forkStep,
+                extension: steps[i].extension
             });
             workflowStepsCount[workflowId] = workflowStepsCount[workflowId] + 1;
             workflowCount++;
 
-            stepIds.push(workflowStepsCount[workflowId]);
+            // add step
+            stepIds[workflowStepsCount[workflowId]] = wfStepId;
         }
-        
-        // TODO: link transitions
-        while (_actorActions.hasNext()) {
-            RLPReader.RLPItem[] memory linkStep = _actorActions.next().toList();
-            findNext[linkStep[0].toUint()][linkStep[1].toUint()] = linkStep[2].toUint();
-        }
-        
 
+        // Create from to next state transition table
+        for (uint i = 0;i < transitions.length; i++) {
+            findNext[
+                transitions[i].partyType
+            ][
+                transitions[i].currentStep
+            ] = transitions[i].nextStep;
+        }
+
+        emit WorkflowCreated(
+            workflowId,
+            stepIds
+        );
         return stepIds;
     }  
 

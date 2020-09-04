@@ -4,6 +4,18 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AgreementModels {
+
+    function EmptyClause() {
+        return Clause({
+            party: address(0),
+            x: 0,
+            operator: keccak256("0"),
+            y: 0,
+            expiry: 0,
+            oracleType: keccak256("tokenPriceFeed")
+        });
+    }
+
     struct Party {
         address signatory;
     }
@@ -29,8 +41,8 @@ contract AgreementModels {
         bytes digest;
     }
     struct AgreementDocument {
-        Party partyASignatory;
-        Party partyBSignatory;
+        Party from;
+        Party to;
         bool signed;
         bool escrowed;
         uint validUntil;

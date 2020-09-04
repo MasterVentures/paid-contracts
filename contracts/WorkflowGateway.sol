@@ -3,11 +3,10 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AgreementModels.sol";
-import "./WorkflowStep.sol";
 // 
 // @dev Controls and executes steps by whitelisted users
 // 
-contract WorkflowGateway is AgreementModels, WorkflowStep {
+contract WorkflowGateway is AgreementModels {
     event AgreementCreated(uint256 indexed id);
     event AgreementModified(uint256 indexed id);
     event AgreementDisputed(uint256 indexed id);
@@ -27,8 +26,9 @@ contract WorkflowGateway is AgreementModels, WorkflowStep {
     public returns (bool) {
         // Validates msg.sender
         // Validates workflow exists in registry
-        // Validates steps exists in registry
+        // Validates steps exists in registry *** New
         // Executes steps
+        // must call workflow execute -> oracle, smart contract
         return true;
     }
     

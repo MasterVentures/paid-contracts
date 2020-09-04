@@ -21,18 +21,17 @@ contract Agreement is Ownable, AgreementModels {
     // Creates an agreement document 
     // Contains a reference for content stored off chain
     function create(
-        address signatoryA,
-        address signatoryB,
+        address to,
         uint validUntil,
-        string multiaddrReference,
-        bytes signature,
-        bytes digest
+        string memory multiaddrReference,
+        bytes memory signature,
+        bytes memory digest
     ) 
     public returns (uint) {
         count++;
         agreements[count] = AgreementDocument({
-            partyASignatory: Party({ partyASignatory: signatoryA }),
-            partyBSignatory: Party({ partyBSignatory: signatoryB }),
+            from: Party({ signatory: msg.sender }),
+            to: Party({ signatory: to }),
             signed: false,
             escrowed: false,
             validUntil: 0,
@@ -42,7 +41,14 @@ contract Agreement is Ownable, AgreementModels {
                 digest: digest
             }),
             terms: Terms({
-                clauses: []
+                clauses: [Clause({
+                            party: address(0),
+                            x: 0,
+                            operator: keccak256("0"),
+                            y: 0,
+                            expiry: 0,
+                            oracleType: keccak256("tokenPriceFeed")
+                        })]
             })
         });
         return true;
@@ -56,10 +62,11 @@ contract Agreement is Ownable, AgreementModels {
     }
 
     function modify(
+        uint id,
         uint validUntil,
-        string multiaddrReference,
-        bytes signature,
-        bytes digest        
+        string memory multiaddrReference,
+        bytes memory signature,
+        bytes memory digest        
     )
     public returns (bool) {
         require(
@@ -67,20 +74,20 @@ contract Agreement is Ownable, AgreementModels {
             "Invalid agreement id"
         );        
         require(
-            agreements[id].signatoryA.partyASignatory == msg.sender,
+            agreements[id].from.signatory == msg.sender,
             "Must be modified by owner"
         );   
         if (validUntil != 0) {
             agreements[id].validUntil = validUntil;
         }
         if (multiaddrReference != "") {
-            agreements[id].multiaddressReference = multiaddrReference;
+            agreements[id].file.multiaddressReference = multiaddrReference;
         }
         if (signature != bytes(0)) {
-            agreements[id].signature = signature;
+            agreements[id].file.signature = signature;
         }
         if (digest != bytes(0)) {
-            agreements[id].digest = digest;
+            agreements[id].file.digest = digest;
         }                        
         return true;
     }

@@ -1,8 +1,8 @@
 pragma solidity ^0.6.10;
 
-
+// @dev Defines a state transition from a current state to next
 struct StepTransition {
-    unit partyType;
-    unit currentStep;
-    unit nextStep;
+    uint partyType;
+    uint currentStep;
+    uint nextStep;
 }
