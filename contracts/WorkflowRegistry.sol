@@ -54,6 +54,7 @@ contract WorkflowRegistry {
     // Each step/status pair gets and id
     function createWorkflow(
         bytes32 workflowId,
+        address workflowContract,
         uint[] memory parties, 
         Step[] memory steps, 
         StepTransition[] memory transitions) 

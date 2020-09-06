@@ -5,4 +5,5 @@ interface IPAIDWorkflow {
     function execute() returns(bool);
     function completed() returns(bool);
     function canceled() returns(bool);
+    function getFactory() returns(address);
 }

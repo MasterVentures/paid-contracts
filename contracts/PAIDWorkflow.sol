@@ -16,8 +16,8 @@ contract PAIDWorkflow is IPAIDWorkflow {
     struct AgreementWorkflowModel {
         address from,
         address to,
-        string fromUserSignatureRef,
-        string toUserSignatureRef,
+        bytes fromUserSignature,
+        bytes toUserSignature,
         bytes documentDigest
     }
 
@@ -29,8 +29,8 @@ contract PAIDWorkflow is IPAIDWorkflow {
     function setPartySignature(
         address to,
         uint agreementId,
-        string fromUserSignatureRef,
-        string toUserSignatureRef,
+        bytes fromUserSignature,
+        bytes toUserSignature,
         bytes documentDigest
     ) returns(uint) {
         // Store document signature and digest
@@ -44,8 +44,8 @@ contract PAIDWorkflow is IPAIDWorkflow {
         signedAgreements[id] = AgreementWorkflowModel({
             msg.sender,
             from,
-            fromUserSignatureRef,
-            toUserSignatureRef,
+            fromUserSignature,
+            toUserSignature,
             documentDigest
         });
 
@@ -65,6 +65,10 @@ contract PAIDWorkflow is IPAIDWorkflow {
         // Accounting
         // Emit events
         // Change state to next
+    }
+
+    function getFactory() returns(address) {
+        return address(this);
     }
 
     function execute() returns(bool) {
