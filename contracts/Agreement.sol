@@ -28,7 +28,6 @@ contract Agreement is Ownable, AgreementModels {
         bytes memory digest
     ) 
     public returns (uint) {
-        count++;
         agreements[count] = AgreementDocument({
             from: Party({ signatory: msg.sender }),
             to: Party({ signatory: to }),
@@ -51,7 +50,11 @@ contract Agreement is Ownable, AgreementModels {
                         })]
             })
         });
-        return true;
+
+        emit AgreementCreated(count);
+        count++;
+
+        return (count - 1);
     }
 
     function has(

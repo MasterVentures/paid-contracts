@@ -6,10 +6,55 @@ import "./IPAIDWorkflow.sol";
 
 contract PAIDWorkflow is IPAIDWorkflow {
 
+    event PartySignatureCompleted(bytes32 indexed id, bytes indexed documentDigest, address from, address, to);
 
-    function requestPartySignature() returns(uint) {
-        // Bob signs
-        // Alice sign on behalf (DID)
+    constructor()
+    public {
+
+    }
+
+    struct AgreementWorkflowModel {
+        address from,
+        address to,
+        string fromUserSignatureRef,
+        string toUserSignatureRef,
+        bytes documentDigest
+    }
+
+    mapping(bytes32 => AgreementWorkflowModel) signedAgreements;
+
+    // Sets the agrement party signatures previously signed using
+    // document wallet
+    // Stores the IPFS reference to the signature and stores document digest
+    function setPartySignature(
+        address to,
+        uint agreementId,
+        string fromUserSignatureRef,
+        string toUserSignatureRef,
+        bytes documentDigest
+    ) returns(uint) {
+        // Store document signature and digest
+        bytes32 id = keccak256(
+            abi.encodePacked(
+                msg.sender,
+                to,
+                agreementId
+            )
+        );
+        signedAgreements[id] = AgreementWorkflowModel({
+            msg.sender,
+            from,
+            fromUserSignatureRef,
+            toUserSignatureRef,
+            documentDigest
+        });
+
+        emit PartySignatureCompleted(
+            id,
+            documentDigest,
+            msg.sender,
+            from
+        );
     }
 
     function create() returns(uint) {
