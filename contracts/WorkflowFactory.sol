@@ -1,20 +1,19 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
-import "../../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
-import "../../node_modules/@openzeppelin/contracts/utils/Address.sol";
-import './IWModel.sol';
-import './WTemplate.sol';
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
-//TODO: create factory should return the respective smart contract
-contract WFactory is LibWStep {
+// Creates IPaidWorkflow Instances
+contract WorkflowFactory {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeMath for uint256;
     using Address for address payable;
+
     // Emits when an document is created
-    event LogWorkflowCreated(address indexed wf);
-    event LogWorkflowRemoved(address indexed wf);
+    event WorkflowCreated(address indexed wf);
+    event WorkflowRemoved(address indexed wf);
     event Withdrawn(address indexed payee, uint256 weiAmount);
 
     address public owner;
@@ -41,21 +40,21 @@ contract WFactory is LibWStep {
         emit Withdrawn(payee, b);
     }
     // payWorkflowTemplate - payable
-    function payWorkflowTemplate(address modelAddress)
-    public payable returns (address) {
-        require(msg.value == fee, "MUST SEND FEE BEFORE USE");
-        IPaid(model).getImpl
-        address wf = address(new WTemplate(owner, address(this)));
-        WTemplate(wf).delegateTemplateOwner(msg.sender, modelAddress);
+    function payWorkflowTemplate(address iworkflowLike)
+    public returns (address) {
+ //       require(msg.value == fee, "MUST SEND FEE BEFORE USE");
+        address wf = IPAIDWorkflow(iworkflowLike).create(
+            owner
+        );
         bool ok = workflows.add(wf);
-        emit LogWorkflowCreated(wf);
+        emit WorkflowCreated(wf);
         return wf;
     }
     // removeWorkflowTemplate - admin call
     function removeWorkflowTemplate(address wf) public returns (bool) {
         require(msg.sender == owner, "INVALID_USER");
         bool ok = workflows.remove(wf);
-        emit LogWorkflowRemoved(wf);
+        emit WorkflowRemoved(wf);
         return ok;
     }
 

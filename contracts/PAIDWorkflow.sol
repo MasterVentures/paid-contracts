@@ -5,12 +5,14 @@ import "./IPAIDWorkflow.sol";
 
 
 contract PAIDWorkflow is IPAIDWorkflow {
-
+    address owner;
     event PartySignatureCompleted(bytes32 indexed id, bytes indexed documentDigest, address from, address, to);
 
-    constructor()
+    constructor(
+        address _owner
+    )
     public {
-
+        owner = _owner;
     }
 
     struct AgreementWorkflowModel {
@@ -57,7 +59,7 @@ contract PAIDWorkflow is IPAIDWorkflow {
         );
     }
 
-    function create() returns(uint) {
+    function apply() returns(uint) {
         // Must have been sign by parties
         // Payable
         // must have been paid before allowing creation
@@ -67,8 +69,10 @@ contract PAIDWorkflow is IPAIDWorkflow {
         // Change state to next
     }
 
-    function getFactory() returns(address) {
-        return address(this);
+    function create(
+        address _owner
+    ) returns(address) {
+        return address(new PAIDWorkflow(_owner));
     }
 
     function execute() returns(bool) {

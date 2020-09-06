@@ -4,12 +4,12 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AgreementModels.sol";
 import "./StepTransition.sol";
-
+import "./WorkflowFactory.sol";
 // 
-// @dev Contains agreements templates or documents created by user
+// @dev A registries for workflows
 // 
 contract WorkflowRegistry {
-    event WorkflowCreated(bytes32 indexed workflowId, uint[] stepIds);
+    event WorkflowRegistered(bytes32 indexed workflowId, uint[] stepIds);
     event WorkflowStepStart(
         address indexed sender, 
         uint indexed current, 
@@ -87,7 +87,7 @@ contract WorkflowRegistry {
             ] = transitions[i].nextStep;
         }
 
-        emit WorkflowCreated(
+        emit WorkflowRegistered(
             workflowId,
             stepIds
         );
