@@ -1,10 +1,10 @@
 pragma solidity ^0.6.10;
 
 
-import "./IPAIDWorkflow.sol";
+import "./BaseWorkflow.sol";
 
 
-contract PAIDWorkflow is IPAIDWorkflow {
+contract PAIDWorkflow is BaseWorkflow {
     address owner;
     event PartySignatureCompleted(bytes32 indexed id, bytes indexed documentDigest, address from, address, to);
 
@@ -51,6 +51,7 @@ contract PAIDWorkflow is IPAIDWorkflow {
             documentDigest
         });
 
+        // TODO: EDDSA
         emit PartySignatureCompleted(
             id,
             documentDigest,
@@ -59,7 +60,8 @@ contract PAIDWorkflow is IPAIDWorkflow {
         );
     }
 
-    function apply() returns(uint) {
+    function apply() 
+    external override returns(uint) {
         // Must have been sign by parties
         // Payable
         // must have been paid before allowing creation
@@ -71,13 +73,16 @@ contract PAIDWorkflow is IPAIDWorkflow {
 
     function create(
         address _owner
-    ) returns(address) {
+    ) external override returns(address) {
         return address(new PAIDWorkflow(_owner));
     }
 
-    function execute() returns(bool) {
+    function execute()
+    public override returns(bool) {
         // Must called oracle and get real time data
     }
-    function completed() returns(bool);
-    function canceled() returns(bool);
+    function completed()
+    public override returns(bool);
+    function canceled()
+    public override returns(bool);
 }
