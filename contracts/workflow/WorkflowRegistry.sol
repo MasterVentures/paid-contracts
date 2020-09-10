@@ -2,9 +2,10 @@ pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../agreements/AgreementModels.sol";
-import "../workflow/StepTransition.sol";
-import "../workflow/WorkflowFactory.sol";
+import "./StepTransition.sol";
+import "./BaseWorkflow.sol";
 // 
 // @dev A registries for workflows
 // 
@@ -17,21 +18,20 @@ contract WorkflowRegistry {
 
     event WorkflowRegistered(bytes32 indexed workflowId, uint[] stepIds);
   
+    event Withdrawn(address indexed payee, uint256 weiAmount);
 
     address owner;
 
     // workflows
     EnumerableSet.AddressSet internal workflows;
-    WorkflowFactory wfFactory;
 
-    constructor(address factory) public {
+    constructor() public {
         owner  = msg.sender;
-        wfFactory = WorkflowFactory(factory);
     }
 
     function has(address a) 
     public returns (bool) {
-        return workflows.has(wf);
+        return workflows.contains(a);
     }
 
     // Registers a PAID workflow contract
@@ -48,15 +48,11 @@ contract WorkflowRegistry {
         // TODO: link with DID eth
         // require(msg.sender == delegatedOwner, "INVALID_USER");
 
-        // Create
-        wf = wfFactory.createWorkflow(
-            workflowContract
-        );
         emit WorkflowCreated(wf);
         bool ok = workflows.add(wf);
 
         // Compile
-        uint[] stepIds =  BaseWorkflow(wf)
+        stepIds =  BaseWorkflow(wf)
         .compile(
             workflowId,
             parties,
@@ -87,19 +83,19 @@ contract WorkflowRegistry {
         return workflows.at(index);
     }
 
-    function setFee(uint256 _fee) public {
-        require(msg.sender == owner, "INVALID_USER");
-        fee = _fee;
-    }
+    // function setFee(uint256 _fee) public {
+    //     require(msg.sender == owner, "INVALID_USER");
+    //     fee = _fee;
+    // }
 
-    function getFee() public returns (uint256) {
-        return fee;
-    }
+    // function getFee() public returns (uint256) {
+    //     return fee;
+    // }
 
-    function withdraw(address payable payee) public {
-        require(msg.sender == owner, "INVALID_USER");
-        uint256 b = address(this).balance;
-        payee.sendValue(address(this).balance);
-        emit Withdrawn(payee, b);
-    }
+    // function withdraw(address payable payee) public {
+    //     require(msg.sender == owner, "INVALID_USER");
+    //     uint256 b = address(this).balance;
+    //     payee.sendValue(address(this).balance);
+    //     emit Withdrawn(payee, b);
+    // }
 }

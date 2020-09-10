@@ -1,12 +1,12 @@
 pragma solidity ^0.6.10;
+pragma experimental ABIEncoderV2;
 
-
-import "./BaseWorkflow.sol";
+import "./workflow/BaseWorkflow.sol";
 
 
 contract PAIDWorkflow is BaseWorkflow {
     address owner;
-    event PartySignatureCompleted(bytes32 indexed id, bytes indexed documentDigest, address from, address, to);
+    event PartySignatureCompleted(bytes32 indexed id, bytes indexed documentDigest, address from, address to);
 
     constructor(
         address _owner
@@ -16,11 +16,11 @@ contract PAIDWorkflow is BaseWorkflow {
     }
 
     struct AgreementWorkflowModel {
-        address from,
-        address to,
-        bytes fromUserSignature,
-        bytes toUserSignature,
-        bytes documentDigest
+        address from;
+        address to;
+        bytes fromUserSignature;
+        bytes toUserSignature;
+        bytes documentDigest;
     }
 
     mapping(bytes32 => AgreementWorkflowModel) signedAgreements;
@@ -31,10 +31,10 @@ contract PAIDWorkflow is BaseWorkflow {
     function setPartySignature(
         address to,
         uint agreementId,
-        bytes fromUserSignature,
-        bytes toUserSignature,
-        bytes documentDigest
-    ) returns(uint) {
+        bytes memory fromUserSignature,
+        bytes memory toUserSignature,
+        bytes memory documentDigest
+    ) public returns(uint) {
         // Store document signature and digest
         bytes32 id = keccak256(
             abi.encodePacked(
@@ -44,11 +44,11 @@ contract PAIDWorkflow is BaseWorkflow {
             )
         );
         signedAgreements[id] = AgreementWorkflowModel({
-            msg.sender,
-            from,
-            fromUserSignature,
-            toUserSignature,
-            documentDigest
+            from: msg.sender,
+            to: to,
+            fromUserSignature: fromUserSignature,
+            toUserSignature: toUserSignature,
+            documentDigest: documentDigest
         });
 
         // TODO: EDDSA
@@ -56,11 +56,11 @@ contract PAIDWorkflow is BaseWorkflow {
             id,
             documentDigest,
             msg.sender,
-            from
+            to
         );
     }
 
-    function apply() 
+    function applyWorkflow() 
     external override returns(uint) {
         // Must have been sign by parties
         // Payable
@@ -69,20 +69,27 @@ contract PAIDWorkflow is BaseWorkflow {
         // Accounting
         // Emit events
         // Change state to next
-    }
-
-    function create(
-        address _owner
-    ) external override returns(address) {
-        return address(new PAIDWorkflow(_owner));
+        return 0;
     }
 
     function execute()
     public override returns(bool) {
         // Must called oracle and get real time data
+        return true;
     }
+
     function completed()
-    public override returns(bool);
+    public override returns(bool) {
+        return true;
+    }
+
     function canceled()
-    public override returns(bool);
+    public override returns(bool) {
+        return true;
+    }
+
+    function requestPartySignature() 
+    public override returns(uint) {
+        return 0;
+    }
 }

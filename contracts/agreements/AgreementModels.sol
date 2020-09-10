@@ -1,16 +1,10 @@
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
 contract AgreementModels {
 
     struct Party {
         address signatory;
-    }
-
-    struct Terms {
-       Clause[]  clauses;
     }
 
     // if X complies then a
@@ -37,6 +31,6 @@ contract AgreementModels {
         bool escrowed;
         uint validUntil;
         Content file;
-        Terms terms;
+        mapping (uint => Clause) clauses;
     }
 }

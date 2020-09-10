@@ -1,22 +1,12 @@
 pragma solidity ^0.6.10;
+pragma experimental ABIEncoderV2;
+
+import "./StepTransition.sol";
 
 abstract contract BaseWorkflow {
     // Registered workflow count and workflow mapping
     uint public workflowCount;
     mapping (bytes32 => mapping(uint => Step)) public workflows;
-
-    struct Step {
-        // Alice or Bob
-        uint partyActor;
-        // Current step
-        uint currentStep;
-        // Next step
-        uint nextStep;
-        // Fork step
-        uint forkStep;
-        // extension to ue
-        address extension;
-    }
 
     // find next workflow step
     mapping (uint => mapping (uint => uint)) public findNext;
@@ -27,13 +17,16 @@ abstract contract BaseWorkflow {
 
     }
 
-
     function hasStep(
         bytes32 workflowId,
         uint stepId
     )
     public returns (bool) {
-        return workflows[workflowId][stepId];
+        if(workflows[workflowId][stepId].nextStep == 0 
+            && workflows[workflowId][stepId].currentStep == 0) {
+            return false;
+        }
+        return true;
     }    
     
     function compile(
@@ -42,7 +35,7 @@ abstract contract BaseWorkflow {
         Step[] memory steps, 
         StepTransition[] memory transitions
     )
-    public returns (uint[] stepIds) {
+    public returns (uint[] memory stepIds) {
         for (uint i = 0; i < steps.length; i++) {
             uint wfStepId = workflowStepsCount[workflowId];
             workflows[workflowId][wfStepId] = Step({
@@ -71,12 +64,16 @@ abstract contract BaseWorkflow {
 
     function requestPartySignature() 
     public virtual returns(uint);
+
     function execute() 
     public virtual returns(bool);
+
     function completed()
     public virtual returns(bool);
+
     function canceled()
     public virtual returns(bool);
-    function create(address owner)
-    public virtual returns(address);
+
+    function applyWorkflow() 
+    external virtual returns(uint);
 }

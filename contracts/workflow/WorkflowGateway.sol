@@ -47,6 +47,8 @@ contract WorkflowGateway is Ownable, AgreementModels {
             wfInstance.hasStep(id, stepId) == true,
             "Workflow step not registered"
         );
+        // TODO: To be implemented
+        
         // Validates workflow exists in registry
         // Validates steps exists in registry *** New
         // Executes steps
@@ -77,12 +79,12 @@ contract WorkflowGateway is Ownable, AgreementModels {
         //     model.onAddRow(to, msg.sender, steps[step], steps[next], payload);
         // }
 
-        emit LogWorkflowStepCompleted(
-            to,
-            next,
-            steps[next].currentActor,
-            model.getCurrentModelIndex()
-        );
+        // emit WorkflowStepCompleted(
+        //     to,
+        //     next,
+        //     steps[next].currentActor,
+        //     model.getCurrentModelIndex()
+        // );
         return true;
     }
 
