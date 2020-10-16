@@ -6,7 +6,7 @@ import "./AgreementModels.sol";
 // 
 // @dev Contains agreements templates or documents created by user
 // 
-contract WorkflowRegistry {
+contract WorkflowRegistry is AgreementModels {
     event AgreementCreated(uint256 indexed id);
     event AgreementModified(uint256 indexed id);
     event AgreementDisputed(uint256 indexed id);
@@ -18,37 +18,33 @@ contract WorkflowRegistry {
     constructor() public {
     }
 
-    // Registers a PAID workflow contract
-    // With states and steps to execute
-    // Add msg.sender as owner
-    // Each step/status pair gets and id
-    function createWorkflow(
-        address signatoryA,
-        address signatoryB,
-        uint validUntil,
-        string multiaddrReference,
-        bytes signature,
-        bytes digest
-    ) 
-    public returns (uint) {
-        count++;
-        agreements[count] = AgreementDocument({
-            partyASignatory: Party({ partyASignatory: signatoryA }),
-            partyBSignatory: Party({ partyBSignatory: signatoryB }),
-            signed: false,
-            escrowed: false,
-            validUntil: 0,
-            file: Content({
-                multiaddressReference: multiaddrReference,
-                signature: signature,
-                digest: digest
-            }),
-            terms: Terms({
-                clauses: []
-            })
-        });
-        return true;
-    }
-
-
+    // // Registers a PAID workflow contract
+    // // With states and steps to execute
+    // // Add msg.sender as owner
+    // // Each step/status pair gets and id
+    // function createWorkflow(
+    //     address signatoryA,
+    //     address signatoryB,
+    //     uint validUntil,
+    //     string memory multiaddrReference,
+    //     bytes memory signature,
+    //     bytes memory digest
+    // ) 
+    // public returns (uint) {
+    //     count++;
+    //     agreements[count] = AgreementDocument({
+    //         fromSigner: Party({ signatory: signatoryA }),
+    //         toSigner: Party({ signatory: signatoryB }),
+    //         signed: false,
+    //         escrowed: false,
+    //         validUntil: 0,
+    //         file: Content({
+    //             multiaddressReference: multiaddrReference,
+    //             signature: signature,
+    //             digest: digest
+    //         })
+            
+    //     });
+    //     return count;
+    // }
 }

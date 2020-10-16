@@ -7,10 +7,10 @@ import "./AgreementModels.sol";
 // @dev Contains agreements templates or documents created by user
 // 
 contract Agreement is Ownable, AgreementModels {
-    event AgreementCreated(uint256 indexed id);
-    event AgreementModified(uint256 indexed id);
-    event AgreementDisputed(uint256 indexed id);
-    event AgreementClosed(uint256 indexed id);
+    event AgreementCreated(address indexed from, address indexed to, string indexed multiaddrReference);
+    event AgreementModified(address indexed from, address indexed to, string indexed multiaddrReference);
+    event AgreementDisputed(address indexed from, address indexed to, string indexed multiaddrReference);
+    event AgreementClosed(address indexed from, address indexed to, string indexed multiaddrReference);
 
     uint256 private count;
     mapping (uint256 => AgreementDocument) public agreements;
@@ -24,28 +24,35 @@ contract Agreement is Ownable, AgreementModels {
         address signatoryA,
         address signatoryB,
         uint validUntil,
-        string multiaddrReference,
-        bytes signature,
-        bytes digest
+        string memory multiaddrReference,
+        bytes32 r,
+        bytes32 s,
+        uint v,
+        bytes memory digest
     ) 
     public returns (uint) {
         count++;
         agreements[count] = AgreementDocument({
-            partyASignatory: Party({ partyASignatory: signatoryA }),
-            partyBSignatory: Party({ partyBSignatory: signatoryB }),
+            fromSigner: Party({ signatory: signatoryA }),
+            toSigner: Party({ signatory: signatoryB }),
             signed: false,
             escrowed: false,
             validUntil: 0,
             file: Content({
                 multiaddressReference: multiaddrReference,
-                signature: signature,
+                r: r,
+                s: s,
+                v: v,
                 digest: digest
-            }),
-            terms: Terms({
-                clauses: []
             })
         });
-        return true;
+
+        emit AgreementCreated(
+            signatoryA, 
+            signatoryB,
+            multiaddrReference
+        );
+        return count;
     }
 
     function has(
@@ -55,41 +62,11 @@ contract Agreement is Ownable, AgreementModels {
         return agreements[id].validUntil != 0;
     }
 
-    function modify(
-        uint validUntil,
-        string multiaddrReference,
-        bytes signature,
-        bytes digest        
-    )
-    public returns (bool) {
-        require(
-            agreements[id].validUntil != 0,
-            "Invalid agreement id"
-        );        
-        require(
-            agreements[id].signatoryA.partyASignatory == msg.sender,
-            "Must be modified by owner"
-        );   
-        if (validUntil != 0) {
-            agreements[id].validUntil = validUntil;
-        }
-        if (multiaddrReference != "") {
-            agreements[id].multiaddressReference = multiaddrReference;
-        }
-        if (signature != bytes(0)) {
-            agreements[id].signature = signature;
-        }
-        if (digest != bytes(0)) {
-            agreements[id].digest = digest;
-        }                        
-        return true;
-    }
-
-
+   
     function get(
         uint id
     ) 
-    public returns (bool) {
+    public returns (AgreementDocument memory) {
         require(
             agreements[id].validUntil != 0,
             "Invalid agreement id"

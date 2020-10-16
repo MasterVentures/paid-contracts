@@ -8,33 +8,20 @@ contract AgreementModels {
         address signatory;
     }
 
-    struct Terms {
-       Clause[]  clauses;
-    }
-
-    // if X complies then a
-    // if X does not comply b
-    struct Clause {
-        address party;
-        uint x; // Subject{symbol,p}
-        bytes32 operator; // && || > < ===
-        uint y;
-        uint expiry;
-        bytes32 oracleType; // token price
-    }
-
     struct Content {
         string multiaddressReference; // multiaddress
-        bytes signature;
+        bytes32 r;
+        bytes32 s;
+        uint v;
         bytes digest;
     }
+
     struct AgreementDocument {
-        Party partyASignatory;
-        Party partyBSignatory;
+        Party fromSigner;
+        Party toSigner;
         bool signed;
         bool escrowed;
         uint validUntil;
         Content file;
-        Terms terms;
     }
 }
