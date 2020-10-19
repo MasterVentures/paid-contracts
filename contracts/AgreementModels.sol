@@ -12,7 +12,7 @@ contract AgreementModels {
         string multiaddressReference; // multiaddress
         bytes32 r;
         bytes32 s;
-        uint v;
+        uint256 v;
         bytes digest;
     }
 
@@ -21,7 +21,8 @@ contract AgreementModels {
         Party toSigner;
         bool signed;
         bool escrowed;
-        uint validUntil;
+        uint256 validUntil;
+        bytes agreementForm;
         Content file;
     }
 }
