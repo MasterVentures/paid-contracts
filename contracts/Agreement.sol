@@ -13,7 +13,15 @@ contract Agreement is Ownable, AgreementModels {
     event AgreementClosed(address indexed from, address indexed to, string indexed multiaddrReference);
 
     uint256 private count;
+    // Agreement documents, which has references to decentralized storage and
+    // onchain metadata
     mapping (uint256 => AgreementDocument) public agreements;
+    // user - plantilla - metadata
+    mapping (address => (mapping (bytes32 => bytes)) public agreementForms;
+
+    // Agreement templates - preloaded from migration
+    mapping (bytes32 => string) agreementTemplates;
+
 
     constructor() public {
     }
@@ -25,12 +33,14 @@ contract Agreement is Ownable, AgreementModels {
         address signatoryB,
         uint validUntil,
         string memory multiaddrReference,
+        bytes32 agreementFormTemplateId,
+        bytes calldata agreementForm,
         bytes32 r,
         bytes32 s,
         uint v,
         bytes memory digest
     ) 
-    public returns (uint) {
+    external returns (uint) {
         count++;
         agreements[count] = AgreementDocument({
             fromSigner: Party({ signatory: signatoryA }),
@@ -38,6 +48,7 @@ contract Agreement is Ownable, AgreementModels {
             signed: false,
             escrowed: false,
             validUntil: 0,
+            agreementForm: agreementForm,
             file: Content({
                 multiaddressReference: multiaddrReference,
                 r: r,
@@ -46,13 +57,34 @@ contract Agreement is Ownable, AgreementModels {
                 digest: digest
             })
         });
-
+//       (uint256 myNum, ,address a) = abi.decode(data, (uint256, bytes,address));
         emit AgreementCreated(
             signatoryA, 
             signatoryB,
             multiaddrReference
         );
         return count;
+    }
+
+
+    // // Use this code snippet to integrate form data with contracts
+    // function toSellBuyStruct(
+    //     bytes32 formId
+    // )
+    // internal
+    // returns (SellBuyStruct) {
+    //       (uint256 myNum, ,address a) = abi.decode(data, (uint256, bytes,address));
+    //       return a;
+    // }
+
+
+    function getFormById(
+        bytes32 formId
+    ) 
+    external
+    returns (bytes calldata) {
+        // todo requires
+        return agreementForms[msg.sender][formId];
     }
 
     function has(
