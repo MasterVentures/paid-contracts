@@ -23,6 +23,6 @@ contract AgreementModels {
         bool escrowed;
         uint256 validUntil;
         bytes agreementForm;
-        Content file;
+        // Content file;
     }
 }
