@@ -10,19 +10,16 @@ contract AgreementModels {
 
     struct Content {
         string multiaddressReference; // multiaddress
-        bytes32 r;
-        bytes32 s;
-        uint256 v;
         bytes digest;
     }
 
     struct AgreementDocument {
         Party fromSigner;
         Party toSigner;
-        bool signed;
         bool escrowed;
         uint256 validUntil;
         bytes agreementForm;
-        // Content file;
+        uint status;
+        Content file;
     }
 }

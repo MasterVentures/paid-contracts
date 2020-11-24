@@ -7,28 +7,27 @@ import "./AgreementModels.sol";
 //
 // @dev Contains agreements templates or documents created by user
 //
+// Create AgreementUtils
 contract Agreement is Ownable, AgreementModels {
-    event AgreementCreated(
+    enum AgreementStatus {
+        PARTY_INIT,
+        COUNTERPARTY_SIGNED,
+        PUBLISHED,
+        DISPUTE_INIT,
+        DISPUTE_ACCEPTED,
+        DISPUTE_REJECTED,
+        VERDICT_PARTY_FOR,
+        VERDICT_PARTY_AGAINST,
+        ARBRITRATION
+    }
+
+    event AgreementPartyCreated(
         uint256 indexed id,
-        bytes32 agreementFormTemplateId,
-        address indexed from,
-        address indexed to,
-        string multiaddrReference
-    );
-    event AgreementModified(
-        address indexed from,
-        address indexed to,
-        string indexed multiaddrReference
-    );
-    event AgreementDisputed(
-        address indexed from,
-        address indexed to,
-        string indexed multiaddrReference
-    );
-    event AgreementClosed(
-        address indexed from,
-        address indexed to,
-        string indexed multiaddrReference
+        bytes32 formTemplateId,
+        address indexed partySource,
+        address indexed partyDestination,
+        string agreementStoredReference,
+        uint status
     );
 
     uint256 private count;
@@ -43,48 +42,94 @@ contract Agreement is Ownable, AgreementModels {
 
     constructor() public {}
 
-    // Creates an agreement document
-    // Contains a reference for content stored off chain
-    function create(
-        address signatoryA,
-        address signatoryB,
+    function partyCreate(
         uint256 validUntil,
         string memory multiaddrReference,
         bytes32 agreementFormTemplateId,
-        bytes calldata agreementForm,
-        // bytes32 r,
-        // bytes32 s,
-        // uint256 v,
-        bytes32 digest
+        bytes memory agreementForm,
+        bytes memory digest
     )
-        external
+        public
+        returns (
+            uint256
+        )
+    {
+        return execute(
+            msg.sender,
+            address(0),
+            validUntil,
+            multiaddrReference,
+            agreementFormTemplateId,
+            agreementForm,
+            uint(AgreementStatus.PARTY_INIT),
+            digest
+        );
+    }
+
+    function counterPartiesSign(
+        uint agreementId,
+        uint256 validUntil,
+        string memory multiaddrReference,
+        bytes32 agreementFormTemplateId,
+        bytes memory agreementForm,
+        bytes memory digest
+    )
+        public
+        returns (
+            uint256
+        )
+    {
+        AgreementDocument memory doc = agreements[agreementId];
+        return execute(
+            doc.fromSigner.signatory,
+            msg.sender,
+            validUntil,
+            multiaddrReference,
+            agreementFormTemplateId,
+            agreementForm,
+            uint(AgreementStatus.COUNTERPARTY_SIGNED),
+            digest
+        );
+    }
+
+    // Creates an agreement document
+    // Contains a reference for content stored off chain
+    function execute(
+        address party,
+        address counterparty,
+        uint256 validUntil,
+        string memory multiaddrReference,
+        bytes32 agreementFormTemplateId,
+        bytes memory agreementForm,
+        uint status,
+        bytes memory digest
+    )
+        internal
         returns (
             uint256
         )
     {
         count++;
         agreements[count] = AgreementDocument({
-            fromSigner: Party({signatory: signatoryA}),
-            toSigner: Party({signatory: signatoryB}),
-            signed: false,
+            fromSigner: Party({ signatory: party }),
+            toSigner: Party({ signatory: counterparty }),
             escrowed: false,
             validUntil: 0,
+            status: uint(AgreementStatus.PARTY_INIT),
             agreementForm: agreementForm,
             file: Content({
                 multiaddressReference: multiaddrReference,
-                r: r,
-                s: s,
-                v: v,
                 digest: digest
             })
         });
         //       (uint256 myNum, ,address a) = abi.decode(data, (uint256, bytes,address));
-        emit AgreementCreated(
+        emit AgreementPartyCreated(
             count,
             agreementFormTemplateId,
-            signatoryA,
-            signatoryB,
-            multiaddrReference
+            party,
+            counterparty,
+            multiaddrReference,
+            uint(AgreementStatus.PARTY_INIT)
         );
         return count;
     }
@@ -98,18 +143,11 @@ contract Agreement is Ownable, AgreementModels {
         return true;
     }
 
-    // // Use this code snippet to integrate form data with contracts
-    // function toSellBuyStruct(
-    //     bytes32 formId
-    // )
-    // internal
-    // returns (SellBuyStruct) {
-    //       (uint256 myNum, ,address a) = abi.decode(data, (uint256, bytes,address));
-    //       return a;
-    // }
 
-    function getFormById(bytes32 formId) public returns (bytes memory) {
-        // todo requires
+    function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public returns (bytes memory) {
+        require(isCounterparty == true &&
+         msg.sender == agreements[agreementId].toSigner.signatory);
+
         return agreementForms[msg.sender][formId];
     }
 
