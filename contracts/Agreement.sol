@@ -12,8 +12,8 @@ contract Agreement is Ownable, AgreementModels {
         uint256 indexed id,
         bytes32 agreementFormTemplateId,
         address indexed from,
-        address indexed to
-        // string multiaddrReference
+        address indexed to,
+        string multiaddrReference
     );
     event AgreementModified(
         address indexed from,
@@ -49,16 +49,16 @@ contract Agreement is Ownable, AgreementModels {
         address signatoryA,
         address signatoryB,
         uint256 validUntil,
-        // string memory multiaddrReference,
+        string memory multiaddrReference,
         bytes32 agreementFormTemplateId,
-        bytes calldata agreementForm
+        bytes calldata agreementForm,
+        // bytes32 r,
+        // bytes32 s,
+        // uint256 v,
+        bytes32 digest
     )
         external
         returns (
-            // bytes32 r,
-            // bytes32 s,
-            // uint256 v,
-            // bytes memory digest
             uint256
         )
     {
@@ -69,22 +69,22 @@ contract Agreement is Ownable, AgreementModels {
             signed: false,
             escrowed: false,
             validUntil: 0,
-            agreementForm: agreementForm
-            // file: Content({
-            //     multiaddressReference: multiaddrReference,
-            //     r: r,
-            //     s: s,
-            //     v: v,
-            //     digest: digest
-            // })
+            agreementForm: agreementForm,
+            file: Content({
+                multiaddressReference: multiaddrReference,
+                r: r,
+                s: s,
+                v: v,
+                digest: digest
+            })
         });
         //       (uint256 myNum, ,address a) = abi.decode(data, (uint256, bytes,address));
         emit AgreementCreated(
             count,
             agreementFormTemplateId,
             signatoryA,
-            signatoryB
-            // multiaddrReference
+            signatoryB,
+            multiaddrReference
         );
         return count;
     }
