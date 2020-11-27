@@ -47,15 +47,15 @@ module.exports = {
   },
   networks: {
     test: {
-      from: '0x4198258023ed0d6fae5dbcf3af2aedaaa363571f',
+      from: '0xeF5A72FD0B636c46e0B8eF2215BbEdEA3e5Ff710',
       host: 'localhost',
-      port: 8545,
+      port: 7545,
       network_id: '*', // Match any network id
     },
     development: {
-      from: '0x4198258023ed0d6fae5dbcf3af2aedaaa363571f',
+      from: '0xeF5A72FD0B636c46e0B8eF2215BbEdEA3e5Ff710',
       host: 'localhost',
-      port: 8545,
+      port: 7545,
       network_id: '*', // Match any network id
     },
     rinkeby: {
