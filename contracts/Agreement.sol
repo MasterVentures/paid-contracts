@@ -44,6 +44,7 @@ contract Agreement is Ownable, AgreementModels {
 
     function partyCreate(
         uint256 validUntil,
+        address counterparty,
         string memory multiaddrReference,
         bytes32 agreementFormTemplateId,
         bytes memory agreementForm,
@@ -56,7 +57,7 @@ contract Agreement is Ownable, AgreementModels {
     {
         return execute(
             msg.sender,
-            address(0),
+            counterparty,
             validUntil,
             multiaddrReference,
             agreementFormTemplateId,
