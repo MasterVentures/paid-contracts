@@ -21,7 +21,7 @@ contract Agreement is Ownable, AgreementModels {
         ARBRITRATION
     }
 
-    event AgreementPartyCreated(
+    event AgreementEvents(
         uint256 indexed id,
         bytes32 formTemplateId,
         address indexed partySource,
@@ -58,6 +58,7 @@ contract Agreement is Ownable, AgreementModels {
         return execute(
             msg.sender,
             counterparty,
+            uint256(0),
             validUntil,
             multiaddrReference,
             agreementFormTemplateId,
@@ -84,6 +85,7 @@ contract Agreement is Ownable, AgreementModels {
         return execute(
             doc.fromSigner.signatory,
             msg.sender,
+            agreementId,
             validUntil,
             multiaddrReference,
             agreementFormTemplateId,
@@ -98,6 +100,7 @@ contract Agreement is Ownable, AgreementModels {
     function execute(
         address party,
         address counterparty,
+        uint256 agreementId,
         uint256 validUntil,
         string memory multiaddrReference,
         bytes32 agreementFormTemplateId,
@@ -110,29 +113,56 @@ contract Agreement is Ownable, AgreementModels {
             uint256
         )
     {
-        count++;
-        agreements[count] = AgreementDocument({
-            fromSigner: Party({ signatory: party }),
-            toSigner: Party({ signatory: counterparty }),
-            escrowed: false,
-            validUntil: 0,
-            status: status,
-            agreementForm: agreementForm,
-            file: Content({
-                multiaddressReference: multiaddrReference,
-                digest: digest
-            })
-        });
-        //       (uint256 myNum, ,address a) = abi.decode(data, (uint256, bytes,address));
-        emit AgreementPartyCreated(
-            count,
-            agreementFormTemplateId,
-            party,
-            counterparty,
-            multiaddrReference,
-            status
-        );
-        return count;
+        if (status == uint(AgreementStatus.PARTY_INIT)) {
+            count++;
+            agreements[count] = AgreementDocument({
+                fromSigner: Party({ signatory: party }),
+                toSigner: Party({ signatory: counterparty }),
+                escrowed: false,
+                validUntil: validUntil,
+                status: status,
+                agreementForm: agreementForm,
+                file: Content({
+                    multiaddressReference: multiaddrReference,
+                    digest: digest
+                })
+            });
+            // Emit Event when Create Agreements
+            emit AgreementEvents(
+                count,
+                agreementFormTemplateId,
+                party,
+                counterparty,
+                multiaddrReference,
+                status
+            );
+            return count;
+        } else if (status == uint(AgreementStatus.COUNTERPARTY_SIGNED)) {
+            agreements[agreementId] = AgreementDocument({
+                fromSigner: Party({ signatory: party }),
+                toSigner: Party({ signatory: counterparty }),
+                escrowed: false,
+                validUntil: validUntil,
+                status: status,
+                agreementForm: agreementForm,
+                file: Content({
+                    multiaddressReference: multiaddrReference,
+                    digest: digest
+                })
+            });
+            // Emit Event when Counterparty Sign the Agreementes
+            emit AgreementEvents(
+                agreementId,
+                agreementFormTemplateId,
+                party,
+                counterparty,
+                multiaddrReference,
+                status
+            );
+            return agreementId;
+        } else {
+            return uint256(0);
+        }
     }
 
     function setAgreementTemplate(bytes32 id, bytes memory content)
