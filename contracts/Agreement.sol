@@ -130,7 +130,7 @@ contract Agreement is Ownable, AgreementModels {
             party,
             counterparty,
             multiaddrReference,
-            uint(AgreementStatus.PARTY_INIT)
+            status
         );
         return count;
     }
