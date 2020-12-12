@@ -116,7 +116,7 @@ contract Agreement is Ownable, AgreementModels {
             toSigner: Party({ signatory: counterparty }),
             escrowed: false,
             validUntil: 0,
-            status: uint(AgreementStatus.PARTY_INIT),
+            status: status,
             agreementForm: agreementForm,
             file: Content({
                 multiaddressReference: multiaddrReference,

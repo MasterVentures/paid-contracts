@@ -299,8 +299,9 @@ module.exports = {
       ],
     },
     address: {
-      "rinkeby-fork": "0x47f7b428A47111D64dA62a89365376301a29B057",
-      rinkeby: "0x47f7b428A47111D64dA62a89365376301a29B057",
+      development: "0x9F26f4Ad98e6BbEA4C33138013d98A611b59a7Ad",
+      "rinkeby-fork": "0xC73511703378D1A103924F4C76f147E594B35600",
+      rinkeby: "0xC73511703378D1A103924F4C76f147E594B35600",
     },
   },
 };
