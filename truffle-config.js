@@ -60,7 +60,7 @@ module.exports = {
     },
     rinkeby: {
       provider: () =>
-        new HDWalletProvider(process.env.MNEMONIC, process.env.URL),
+        new HDWalletProvider(process.env.MNEMONIC, process.env.RINKEBY_URL),
       network_id: 4,
       gas: 7000000,
       gasPrice: 10000000000,
