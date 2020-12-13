@@ -60,21 +60,21 @@ module.exports = {
     },
     rinkeby: {
       provider: () =>
-        new HDWalletProvider(process.env.MNEMONIC, process.env.RINKEBY_URL),
+        new HDWalletProvider(process.env.MNEMONIC, process.env.ETH_NET_URL),
       network_id: 4,
       gas: 7000000,
       gasPrice: 10000000000,
     },
     mainnet: {
       provider: () =>
-        new HDWalletProvider(process.env.MNEMONIC, process.env.URL),
+        new HDWalletProvider(process.env.MNEMONIC, process.env.ETH_NET_URL),
       network_id: 1,
       gas: 2500000,
       gasPrice: 18000000000,
     },
     ropsten: {
       provider: () =>
-        new HDWalletProvider(process.env.MNEMONIC, process.env.URL),
+        new HDWalletProvider(process.env.MNEMONIC, process.env.ETH_NET_URL),
       network_id: 3,
       gas: 4500000,
       gasPrice: 10000000000,
