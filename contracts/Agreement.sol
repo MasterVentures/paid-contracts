@@ -2,6 +2,8 @@ pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./AgreementModels.sol";
 
 //
@@ -9,6 +11,9 @@ import "./AgreementModels.sol";
 //
 // Create AgreementUtils
 contract Agreement is Ownable, AgreementModels {
+
+    using SafeERC20 for IERC20;
+
     enum AgreementStatus {
         PARTY_INIT,
         COUNTERPARTY_SIGNED,
@@ -189,5 +194,10 @@ contract Agreement is Ownable, AgreementModels {
     function get(uint256 id) public returns (AgreementDocument memory) {
         require(agreements[id].validUntil != 0, "Invalid agreement id");
         return agreements[id];
+    }
+
+    function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public {
+        require(amount >= token.balanceOf(sender), "Enough Balance for this Operation");
+        token.safeTransferFrom(sender, recipient, amount);
     }
 }
