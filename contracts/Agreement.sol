@@ -69,6 +69,8 @@ contract Agreement is Ownable, AgreementModels {
             agreementFormTemplateId,
             agreementForm,
             uint(AgreementStatus.PARTY_INIT),
+            block.timestamp,
+            block.timestamp,
             digest
         );
     }
@@ -96,6 +98,8 @@ contract Agreement is Ownable, AgreementModels {
             agreementFormTemplateId,
             agreementForm,
             uint(AgreementStatus.COUNTERPARTY_SIGNED),
+            doc.created_at,
+            block.timestamp,
             digest
         );
     }
@@ -111,6 +115,8 @@ contract Agreement is Ownable, AgreementModels {
         bytes32 agreementFormTemplateId,
         bytes memory agreementForm,
         uint status,
+        uint created_at,
+        uint updated_at,
         bytes memory digest
     )
         internal
@@ -127,6 +133,8 @@ contract Agreement is Ownable, AgreementModels {
                 validUntil: validUntil,
                 status: status,
                 agreementForm: agreementForm,
+                created_at: created_at,
+                updated_at: updated_at,
                 file: Content({
                     multiaddressReference: multiaddrReference,
                     digest: digest
@@ -150,6 +158,8 @@ contract Agreement is Ownable, AgreementModels {
                 validUntil: validUntil,
                 status: status,
                 agreementForm: agreementForm,
+                created_at: created_at,
+                updated_at: updated_at,
                 file: Content({
                     multiaddressReference: multiaddrReference,
                     digest: digest

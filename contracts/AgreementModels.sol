@@ -20,6 +20,8 @@ contract AgreementModels {
         uint256 validUntil;
         bytes agreementForm;
         uint status;
+        uint created_at;
+        uint updated_at;
         Content file;
     }
 }
