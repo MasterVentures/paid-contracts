@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
@@ -20,35 +21,35 @@ contract WorkflowGateway is AgreementModels, WorkflowStep {
     }
 
 
-    function executeStep(
-        uint id,
-        uint stepId
-    ) 
-    public returns (bool) {
-        // Validates msg.sender
-        // Validates workflow exists in registry
-        // Validates steps exists in registry
-        // Executes steps
-        return true;
-    }
+    // function executeStep(
+    //     uint id,
+    //     uint stepId
+    // ) 
+    // public returns (bool) {
+    //     // Validates msg.sender
+    //     // Validates workflow exists in registry
+    //     // Validates steps exists in registry
+    //     // Executes steps
+    //     return true;
+    // }
     
-    function addUserToWhitelist(
-        address user,
-        address agreementContract
-    ) 
-    public returns (bool) {
-        // Adds user to agreement contract
-        return true;
-    }
+    // function addUserToWhitelist(
+    //     address user
+    //     // address agreementContract
+    // ) 
+    // public returns (bool) {
+    //     // Adds user to agreement contract
+    //     return true;
+    // }
 
-    function removeUserFromWhitelist(
-        address user,
-        address agreementContract
-    ) 
-    public returns (bool) {
-        // Removes user to agreement contract
-        return true;
-    }
+    // function removeUserFromWhitelist(
+    //     address user
+    //     // address agreementContract
+    // ) 
+    // public returns (bool) {
+    //     // Removes user to agreement contract
+    //     return true;
+    // }
 
     
 
