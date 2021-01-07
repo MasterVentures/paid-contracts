@@ -180,7 +180,7 @@ contract Agreement is Ownable, AgreementModels {
     }
 
 
-    function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public returns (bytes memory) {
+    function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public view returns (bytes memory) {
         require(isCounterparty == true &&
          msg.sender == agreements[agreementId].toSigner.signatory);
 
@@ -191,9 +191,13 @@ contract Agreement is Ownable, AgreementModels {
         return agreements[id].validUntil != 0;
     }
 
-    function get(uint256 id) public returns (AgreementDocument memory) {
+    function get(uint256 id) public view returns (AgreementDocument memory) {
         require(agreements[id].validUntil != 0, "Invalid agreement id");
         return agreements[id];
+    }
+
+    function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
+        return token.balanceOf(recipient);
     }
 
     function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public {
