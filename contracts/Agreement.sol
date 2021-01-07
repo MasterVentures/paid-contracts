@@ -195,11 +195,11 @@ contract Agreement is Ownable, AgreementModels {
         require(agreements[id].validUntil != 0, "Invalid agreement id");
         return agreements[id];
     }
-
+    // Get balance of the Toekn ERC20, of the address recipient
     function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
         return token.balanceOf(recipient);
     }
-
+    // Withdraw amount of token indicate of any token ERC20, and send to any address selected
     function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public {
         require(amount >= token.balanceOf(sender), "Enough Balance for this Operation");
         token.safeTransferFrom(sender, recipient, amount);
