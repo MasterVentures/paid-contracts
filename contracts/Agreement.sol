@@ -212,7 +212,7 @@ contract Agreement is Ownable, AgreementModels {
     }
     // Withdraw amount of token indicate of any token ERC20, and send to any address selected
     function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public {
-        require(amount >= token.balanceOf(sender), "Enough Balance for this Operation");
+        require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
         token.safeTransferFrom(sender, recipient, amount);
     }
 }
