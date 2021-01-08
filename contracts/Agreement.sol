@@ -211,7 +211,7 @@ contract Agreement is Ownable, AgreementModels {
     }
 
     function getAllowanceToken(ERC20 token, address recipient) public view returns (uint256) {
-        return token.allowance(token.address, recipient);
+        return token.allowance(address(token), recipient);
     }
     // Withdraw amount of token indicate of any token ERC20, and send to any address selected
     function withdraw(ERC20 token, address sender,address recipient, uint256 amount) public {
