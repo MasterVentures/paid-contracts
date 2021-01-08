@@ -3,15 +3,14 @@ pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./AgreementModels.sol";
 
 
 // @dev Contains agreements templates or documents created by user
 //
 // Create AgreementUtils
-contract Agreement is Ownable, AgreementModels, IERC20 {
+contract Agreement is Ownable, AgreementModels {
 
     // using SafeERC20 for IERC20;
 
@@ -207,14 +206,18 @@ contract Agreement is Ownable, AgreementModels, IERC20 {
         return agreements[id];
     }
     // Get balance of the Toekn ERC20, of the address recipient
-    function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
+    function getBalanceToken(ERC20 token, address recipient) public view returns (uint256) {
         return token.balanceOf(recipient);
     }
+
+    function getAllowanceToken(ERC20 token, address recipient) public view returns (uint256) {
+        return token.allowance(token.address, recipient);
+    }
     // Withdraw amount of token indicate of any token ERC20, and send to any address selected
-    function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public view returns (bool)  {
+    function withdraw(ERC20 token, address sender,address recipient, uint256 amount) public {
         require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
         // token.safeTransferFrom(sender, recipient, amount);
-        return token.transferFrom(sender, recipient, amount);
+        token.transferFrom(sender, recipient, amount);
     }
 }
