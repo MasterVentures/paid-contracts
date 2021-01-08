@@ -11,9 +11,9 @@ import "./AgreementModels.sol";
 // @dev Contains agreements templates or documents created by user
 //
 // Create AgreementUtils
-contract Agreement is Ownable, AgreementModels {
+contract Agreement is Ownable, AgreementModels, IERC20 {
 
-    using SafeERC20 for IERC20;
+    // using SafeERC20 for IERC20;
 
     enum AgreementStatus {
         PARTY_INIT,
@@ -211,8 +211,10 @@ contract Agreement is Ownable, AgreementModels {
         return token.balanceOf(recipient);
     }
     // Withdraw amount of token indicate of any token ERC20, and send to any address selected
-    function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public {
+    function withdraw(IERC20 token, address sender,address recipient, uint256 amount) public view returns (bool)  {
         require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
-        token.safeTransferFrom(sender, recipient, amount);
+        // token.safeIncreaseAllowance(recipient, amount);
+        // token.safeTransferFrom(sender, recipient, amount);
+        return token.transferFrom(sender, recipient, amount);
     }
 }
