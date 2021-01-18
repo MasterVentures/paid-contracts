@@ -2,17 +2,18 @@
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/GSN/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./AgreementModels.sol";
 
 
 // @dev Contains agreements templates or documents created by user
 //
 // Create AgreementUtils
-contract Agreement is Ownable, AgreementModels {
+contract Agreement is Context, Ownable, AgreementModels {
 
-    // using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20;
 
     enum AgreementStatus {
         PARTY_INIT,
@@ -61,7 +62,7 @@ contract Agreement is Ownable, AgreementModels {
         )
     {
         return execute(
-            msg.sender,
+            _msgSender(),
             counterparty,
             uint256(0),
             validUntil,
@@ -91,7 +92,7 @@ contract Agreement is Ownable, AgreementModels {
         AgreementDocument memory doc = agreements[agreementId];
         return execute(
             doc.fromSigner.signatory,
-            msg.sender,
+            _msgSender(),
             agreementId,
             validUntil,
             multiaddrReference,
@@ -194,9 +195,9 @@ contract Agreement is Ownable, AgreementModels {
 
     function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public view returns (bytes memory) {
         require(isCounterparty == true &&
-         msg.sender == agreements[agreementId].toSigner.signatory);
+         _msgSender() == agreements[agreementId].toSigner.signatory);
 
-        return agreementForms[msg.sender][formId];
+        return agreementForms[_msgSender()][formId];
     }
 
     function has(uint256 id) public view returns (bool) {
@@ -208,18 +209,20 @@ contract Agreement is Ownable, AgreementModels {
         return agreements[id];
     }
     // Get balance of the Toekn ERC20, of the address recipient
-    function getBalanceToken(ERC20 token, address recipient) public view returns (uint256) {
+    function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
         return token.balanceOf(recipient);
     }
 
-    function getAllowanceToken(ERC20 token, address recipient) public view returns (uint256) {
-        return token.allowance(address(token), recipient);
-    }
+    // function getAllowanceToken(IERC20 token, address recipient,  uint256 amount) public view returns (uint256) {
+    //     require(_msgSender() == , "Sender in not the Same to Sign the Transaction");
+    //     return token.safeIncreaseAllowance(address(token), recipient, amount);
+    // }
     // Withdraw amount of token indicate of any token ERC20, and send to any address selected
-    function withdraw(ERC20 token, address sender,address recipient, uint256 amount) public {
+    function payPaidServices(IERC20 token, address sender,address recipient, uint256 amount) public {
+        require(_msgSender() == sender, "Sender in not the Same to Sign the Transaction");
         require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        // token.safeTransferFrom(sender, recipient, amount);
-        token.transferFrom(sender, recipient, amount);
+        token.safeTransferFrom(_msgSender(), recipient, amount);
+        // token.transferFrom(sender, recipient, amount);
     }
 }
