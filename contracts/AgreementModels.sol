@@ -20,6 +20,7 @@ contract AgreementModels {
         bool escrowed;
         uint256 validUntil;
         bytes agreementForm;
+        bytes32 agreementFormTemplateId;
         uint status;
         uint created_at;
         uint updated_at;

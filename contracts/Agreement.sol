@@ -23,7 +23,7 @@ contract Agreement is Ownable, AgreementModels {
         DISPUTE_REJECTED,
         VERDICT_PARTY_FOR,
         VERDICT_PARTY_AGAINST,
-        ARBRITRATION
+        ARBITRATION
     }
 
     event AgreementEvents(
@@ -133,6 +133,7 @@ contract Agreement is Ownable, AgreementModels {
                 validUntil: validUntil,
                 status: status,
                 agreementForm: agreementForm,
+                agreementFormTemplateId: agreementFormTemplateId,
                 created_at: created_at,
                 updated_at: updated_at,
                 file: Content({
@@ -158,6 +159,7 @@ contract Agreement is Ownable, AgreementModels {
                 validUntil: validUntil,
                 status: status,
                 agreementForm: agreementForm,
+                agreementFormTemplateId: agreementFormTemplateId,
                 created_at: created_at,
                 updated_at: updated_at,
                 file: Content({
