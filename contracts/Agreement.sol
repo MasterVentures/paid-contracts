@@ -73,7 +73,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 
     constructor() public {}
 
-    function getPayment() public onlyOwner() returns (uint) {
+    function getPayment() public view onlyOwner() returns (uint) {
         return _payment;
     }
 
@@ -91,7 +91,7 @@ contract Agreement is Context, Ownable, AgreementModels {
         return true;
     }
 
-    function getRecipient() public onlyOwner() returns (address) {
+    function getRecipient() public view onlyOwner() returns (address) {
         return _recipient;
     }
 
