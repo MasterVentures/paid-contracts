@@ -5,13 +5,14 @@ pragma experimental ABIEncoderV2;
 // import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./AgreementModels.sol";
 
 
 // @dev Contains agreements templates or documents created by user
 //
 // Create AgreementUtils
-contract Agreement is Context, Ownable, AgreementModels {
+contract Agreement is Context, Ownable, Address, AgreementModels {
 
     using SafeERC20 for IERC20;
 
@@ -36,10 +37,28 @@ contract Agreement is Context, Ownable, AgreementModels {
         string agreementStoredReference,
         uint status
     );
+    //Events of Payments
+    event PaymentEvents(
+        uint payments,
+        address sender,
+        address token
+    );
+    //Events of Change Payments
+    event ChangePaymentEvents(
+        uint oldPayment,
+        uint newPayment,
+        address owner
+    );
+    // Event of change Recipient
+    event ChangeRecipientEvents(
+        address oldRecipient,
+        address newRecipient,
+        address owner
+    );
     // Value of Payment Value
-    uint private payment;
+    uint private _payment;
     // Address to Receive the Payment
-    address private recipient;
+    address private _recipient;
     // ID for Smart Agreements
     uint256 private count;
     // Agreement documents, which has references to decentralized storage and
@@ -51,9 +70,43 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
-    constructor(uint _payment, address _recipient) public {
-        payment = _payment;
-        recipient = _recipient;
+    constructor() public {}
+
+    function getPayment() public onlyOwner() returns (uint) {
+        return _payment;
+    }
+
+    function setPayment(uint payment) public onlyOwner() returns (bool) {
+        require(payment != 0, "Value of Payment are more than zero (0)");
+        // Old Value
+        uint oldPaymentValue = _payment;
+        _payment = payment;
+        // Event Change Payment
+        emit ChangePaymentEvents(
+            oldPaymentValue,
+            _payment,
+            msg.sender
+        );
+        return true;
+    }
+
+    function getRecipient() public onlyOwner() returns (address) {
+        return _recipient;
+    }
+
+    function setRecipient(address recipient) public onlyOwner() returns (bool) {
+        require(recipient != address(0), "ERC20: Error to Set Recipient with zero address");
+        require(isContract(recipient) == false, "ERC20: Error to Set Recipient with a contract address");
+        // Old Value
+        address oldRecipientValue = _recipient;
+        _recipient = recipient;
+        // Event Change Recipient
+        emit ChangeRecipientEvents(
+            oldRecipientValue,
+            _recipient,
+            msg.sender
+        );
+        return true;
     }
 
     function partyCreate(
@@ -70,7 +123,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
-        require(token.allowance(msg.sender,address(this)) >= payment,"Don't have allowance to pay for PAID services");
+        require(token.allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
 
         return execute(
             token,
@@ -102,7 +155,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
-        require(token.allowance(msg.sender,address(this)) >= payment,"Don't have allowance to pay for PAID services");
+        require(token.allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
 
         AgreementDocument memory doc = agreements[agreementId];
         return execute(
@@ -145,7 +198,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             multiaddrReference,
             agreementFormTemplateId,
             agreementForm,
-            uint(AgreementStatus.REJECTED),
+            uint(AgreementStatus.COUNTERPARTY_REJECTED),
             doc.created_at,
             block.timestamp,
             digest
@@ -285,15 +338,21 @@ contract Agreement is Context, Ownable, AgreementModels {
         return agreements[id];
     }
     // Get balance of the Toekn ERC20, of the address recipient
-    function getBalanceToken(IERC20 token, address _recipient) public view returns (uint256) {
-        return token.balanceOf(_recipient);
+    function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
+        return token.balanceOf(recipient);
     }
 
-    function AgreementPayment(IERC20 token, address sender) private {
+    function AgreementPayment(IERC20 token, address sender) private returns (bool) {
         require(msg.sender == sender, "Sender in not the Same to Sign the Transaction");
-        require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
+        require(_payment <= token.balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        require (token.safeTransferFrom(msg.sender, recipient, payment), "ERROR WHEN TOKEN TRANSFER" )
-        return true
+        require (token.safeTransferFrom(msg.sender, _recipient, _payment), "ERROR WHEN TOKEN TRANSFER" );
+        //Emit Event for Payment
+        emit PaymentEvents(
+            _payment,
+            msg.sender,
+            token.address
+        );
+        return true;
     }
 }
