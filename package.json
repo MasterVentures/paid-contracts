@@ -4,6 +4,7 @@
   "description": "PAID contracts",
   "main": "truffle-config.js",
   "dependencies": {
+    "@openzeppelin/cli": "^2.8.2",
     "bignumber.js": "^9.0.0",
     "lodash": "^4.17.15"
   },

@@ -12,9 +12,10 @@ import "./AgreementModels.sol";
 // @dev Contains agreements templates or documents created by user
 //
 // Create AgreementUtils
-contract Agreement is Context, Ownable, Address, AgreementModels {
+contract Agreement is Context, Ownable, AgreementModels {
 
     using SafeERC20 for IERC20;
+    using Address for address;
 
     enum AgreementStatus {
         PARTY_INIT,
@@ -96,7 +97,7 @@ contract Agreement is Context, Ownable, Address, AgreementModels {
 
     function setRecipient(address recipient) public onlyOwner() returns (bool) {
         require(recipient != address(0), "ERC20: Error to Set Recipient with zero address");
-        require(isContract(recipient) == false, "ERC20: Error to Set Recipient with a contract address");
+        require(address(recipient).isContract() == false, "ERC20: Error to Set Recipient with a contract address");
         // Old Value
         address oldRecipientValue = _recipient;
         _recipient = recipient;
@@ -346,12 +347,12 @@ contract Agreement is Context, Ownable, Address, AgreementModels {
         require(msg.sender == sender, "Sender in not the Same to Sign the Transaction");
         require(_payment <= token.balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        require (token.safeTransferFrom(msg.sender, _recipient, _payment), "ERROR WHEN TOKEN TRANSFER" );
+        token.safeTransferFrom(msg.sender, _recipient, _payment);
         //Emit Event for Payment
         emit PaymentEvents(
             _payment,
             msg.sender,
-            token.address
+            address(token)
         );
         return true;
     }
