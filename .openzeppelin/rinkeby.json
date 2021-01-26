@@ -4,7 +4,7 @@
   "proxies": {
     "PAID Network/Agreement": [
       {
-        "address": "0x60c1E6ae4548F5c705e2552DeCDA4933D629C85D",
+        "address": "0x6E7bbCDAf6164B61eB5247B0D32B8762a3B39030",
         "kind": "NonProxy",
         "bytecodeHash": "db8ba7e70f8ed87e0b56a18f3cd2768b269312a4f4a0e9ed78618cf37c753e10"
       },
