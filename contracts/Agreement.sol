@@ -2,7 +2,7 @@
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/GSN/Context.sol";
+// import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AgreementModels.sol";
@@ -24,7 +24,8 @@ contract Agreement is Context, Ownable, AgreementModels {
         DISPUTE_REJECTED,
         VERDICT_PARTY_FOR,
         VERDICT_PARTY_AGAINST,
-        ARBITRATION
+        ARBITRATION,
+        REJECTED
     }
 
     event AgreementEvents(
@@ -35,7 +36,9 @@ contract Agreement is Context, Ownable, AgreementModels {
         string agreementStoredReference,
         uint status
     );
-
+    // Value of Payment Value
+    // uint constant payment;
+    // ID for Smart Agreements
     uint256 private count;
     // Agreement documents, which has references to decentralized storage and
     // onchain metadata
@@ -46,9 +49,12 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
-    constructor() public {}
+    constructor(uint _payment) public {
+        payment = _payment;
+    }
 
     function partyCreate(
+        IERC20 token,
         uint256 validUntil,
         address counterparty,
         string memory multiaddrReference,
@@ -61,8 +67,11 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
+        require(token.allowance(msg.sender,address(this)) >= payment,"Enough Balance for Pay PAID Services");
+
         return execute(
-            _msgSender(),
+            token,
+            msg.sender,
             counterparty,
             uint256(0),
             validUntil,
@@ -77,6 +86,40 @@ contract Agreement is Context, Ownable, AgreementModels {
     }
 
     function counterPartiesSign(
+        IERC20 token,
+        uint agreementId,
+        uint256 validUntil,
+        string memory multiaddrReference,
+        bytes32 agreementFormTemplateId,
+        bytes memory agreementForm,
+        bytes memory digest
+    )
+        public
+        returns (
+            uint256
+        )
+    {
+        require(token.allowance(msg.sender,address(this)) >= payment,"Enough Balance for Pay PAID Services");
+
+        AgreementDocument memory doc = agreements[agreementId];
+        return execute(
+            token,
+            doc.fromSigner.signatory,
+            msg.sender,
+            agreementId,
+            validUntil,
+            multiaddrReference,
+            agreementFormTemplateId,
+            agreementForm,
+            uint(AgreementStatus.COUNTERPARTY_SIGNED),
+            doc.created_at,
+            block.timestamp,
+            digest
+        );
+    }
+
+    function counterPartiesReject(
+        IERC20 token,
         uint agreementId,
         uint256 validUntil,
         string memory multiaddrReference,
@@ -91,14 +134,15 @@ contract Agreement is Context, Ownable, AgreementModels {
     {
         AgreementDocument memory doc = agreements[agreementId];
         return execute(
+            token,
             doc.fromSigner.signatory,
-            _msgSender(),
+            msg.sender,
             agreementId,
             validUntil,
             multiaddrReference,
             agreementFormTemplateId,
             agreementForm,
-            uint(AgreementStatus.COUNTERPARTY_SIGNED),
+            uint(AgreementStatus.REJECTED),
             doc.created_at,
             block.timestamp,
             digest
@@ -108,6 +152,7 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Creates an agreement document
     // Contains a reference for content stored off chain
     function execute(
+        IERC20 token,
         address party,
         address counterparty,
         uint256 agreementId,
@@ -195,9 +240,9 @@ contract Agreement is Context, Ownable, AgreementModels {
 
     function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public view returns (bytes memory) {
         require(isCounterparty == true &&
-         _msgSender() == agreements[agreementId].toSigner.signatory);
+         msg.sender == agreements[agreementId].toSigner.signatory);
 
-        return agreementForms[_msgSender()][formId];
+        return agreementForms[msg.sender][formId];
     }
 
     function has(uint256 id) public view returns (bool) {
@@ -214,15 +259,15 @@ contract Agreement is Context, Ownable, AgreementModels {
     }
 
     // function getAllowanceToken(IERC20 token, address recipient,  uint256 amount) public view returns (uint256) {
-    //     require(_msgSender() == , "Sender in not the Same to Sign the Transaction");
+    //     require(msg.sender == , "Sender in not the Same to Sign the Transaction");
     //     return token.safeIncreaseAllowance(address(token), recipient, amount);
     // }
     // Withdraw amount of token indicate of any token ERC20, and send to any address selected
     function payPaidServices(IERC20 token, address sender,address recipient, uint256 amount) public {
-        require(_msgSender() == sender, "Sender in not the Same to Sign the Transaction");
+        require(msg.sender == sender, "Sender in not the Same to Sign the Transaction");
         require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        token.safeTransferFrom(_msgSender(), recipient, amount);
+        token.safeTransferFrom(msg.sender, recipient, amount);
         // token.transferFrom(sender, recipient, amount);
     }
 }
