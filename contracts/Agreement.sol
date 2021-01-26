@@ -25,7 +25,7 @@ contract Agreement is Context, Ownable, AgreementModels {
         VERDICT_PARTY_FOR,
         VERDICT_PARTY_AGAINST,
         ARBITRATION,
-        REJECTED
+        COUNTERPARTY_REJECTED
     }
 
     event AgreementEvents(
@@ -37,7 +37,9 @@ contract Agreement is Context, Ownable, AgreementModels {
         uint status
     );
     // Value of Payment Value
-    // uint constant payment;
+    uint private payment;
+    // Address to Receive the Payment
+    address private recipient;
     // ID for Smart Agreements
     uint256 private count;
     // Agreement documents, which has references to decentralized storage and
@@ -49,8 +51,9 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
-    constructor(uint _payment) public {
+    constructor(uint _payment, address _recipient) public {
         payment = _payment;
+        recipient = _recipient;
     }
 
     function partyCreate(
@@ -67,7 +70,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
-        require(token.allowance(msg.sender,address(this)) >= payment,"Enough Balance for Pay PAID Services");
+        require(token.allowance(msg.sender,address(this)) >= payment,"Don't have allowance to pay for PAID services");
 
         return execute(
             token,
@@ -99,7 +102,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
-        require(token.allowance(msg.sender,address(this)) >= payment,"Enough Balance for Pay PAID Services");
+        require(token.allowance(msg.sender,address(this)) >= payment,"Don't have allowance to pay for PAID services");
 
         AgreementDocument memory doc = agreements[agreementId];
         return execute(
@@ -213,6 +216,34 @@ contract Agreement is Context, Ownable, AgreementModels {
                     digest: digest
                 })
             });
+            // Payment of PAID Services
+            require(AgreementPayment(token, counterparty), "Error when Pay PAID Services");
+            // Emit Event when Counterparty Sign the Agreementes
+            emit AgreementEvents(
+                agreementId,
+                agreementFormTemplateId,
+                party,
+                counterparty,
+                multiaddrReference,
+                status
+            );
+            return agreementId;
+        } else if (status == uint(AgreementStatus.COUNTERPARTY_REJECTED)) {
+            agreements[agreementId] = AgreementDocument({
+                fromSigner: Party({ signatory: party }),
+                toSigner: Party({ signatory: counterparty }),
+                escrowed: false,
+                validUntil: validUntil,
+                status: status,
+                agreementForm: agreementForm,
+                agreementFormTemplateId: agreementFormTemplateId,
+                created_at: created_at,
+                updated_at: updated_at,
+                file: Content({
+                    multiaddressReference: multiaddrReference,
+                    digest: digest
+                })
+            });
             // Emit Event when Counterparty Sign the Agreementes
             emit AgreementEvents(
                 agreementId,
@@ -254,20 +285,15 @@ contract Agreement is Context, Ownable, AgreementModels {
         return agreements[id];
     }
     // Get balance of the Toekn ERC20, of the address recipient
-    function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
-        return token.balanceOf(recipient);
+    function getBalanceToken(IERC20 token, address _recipient) public view returns (uint256) {
+        return token.balanceOf(_recipient);
     }
 
-    // function getAllowanceToken(IERC20 token, address recipient,  uint256 amount) public view returns (uint256) {
-    //     require(msg.sender == , "Sender in not the Same to Sign the Transaction");
-    //     return token.safeIncreaseAllowance(address(token), recipient, amount);
-    // }
-    // Withdraw amount of token indicate of any token ERC20, and send to any address selected
-    function payPaidServices(IERC20 token, address sender,address recipient, uint256 amount) public {
+    function AgreementPayment(IERC20 token, address sender) private {
         require(msg.sender == sender, "Sender in not the Same to Sign the Transaction");
         require(amount <= token.balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        token.safeTransferFrom(msg.sender, recipient, amount);
-        // token.transferFrom(sender, recipient, amount);
+        require (token.safeTransferFrom(msg.sender, recipient, payment), "ERROR WHEN TOKEN TRANSFER" )
+        return true
     }
 }
