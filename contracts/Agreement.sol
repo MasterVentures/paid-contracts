@@ -73,7 +73,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 
     constructor() public {}
 
-    function getPayment() public view onlyOwner() returns (uint) {
+    function getPayment() public view returns (uint) {
         return _payment;
     }
 
@@ -124,8 +124,6 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
-        require(token.allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
-
         return execute(
             token,
             msg.sender,
