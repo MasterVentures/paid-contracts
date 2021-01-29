@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
@@ -10,7 +11,7 @@ contract EscrowManager {
 
     } 
 
-    function withdraw() public returns (bool) {
+    function withdraw() public view returns (bool) {
         return true;
     }
 
@@ -18,7 +19,7 @@ contract EscrowManager {
         return true;
     }
 
-    function has() public returns (bool) {
+    function has() public view returns (bool) {
         return true;
     }
 }

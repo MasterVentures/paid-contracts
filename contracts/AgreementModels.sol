@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
@@ -8,33 +9,21 @@ contract AgreementModels {
         address signatory;
     }
 
-    struct Terms {
-       Clause[]  clauses;
-    }
-
-    // if X complies then a
-    // if X does not comply b
-    struct Clause {
-        address party;
-        uint x; // Subject{symbol,p}
-        bytes32 operator; // && || > < ===
-        uint y;
-        uint expiry;
-        bytes32 oracleType; // token price
-    }
-
     struct Content {
         string multiaddressReference; // multiaddress
-        bytes signature;
         bytes digest;
     }
+
     struct AgreementDocument {
-        Party partyASignatory;
-        Party partyBSignatory;
-        bool signed;
+        Party fromSigner;
+        Party toSigner;
         bool escrowed;
-        uint validUntil;
+        uint256 validUntil;
+        bytes agreementForm;
+        bytes32 agreementFormTemplateId;
+        uint status;
+        uint created_at;
+        uint updated_at;
         Content file;
-        Terms terms;
     }
 }
