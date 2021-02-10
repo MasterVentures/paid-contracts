@@ -1,6 +1,9 @@
 {
   "manifestVersion": "2.2",
-  "contracts": {},
+  "contracts": {
+    "Migrations": "Migrations",
+    "Agreement": "Agreement"
+  },
   "dependencies": {},
   "name": "PAID Network",
   "version": "0.0.2",
