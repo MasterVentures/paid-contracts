@@ -47,13 +47,13 @@ module.exports = {
   },
   networks: {
     test: {
-      from: '0xeF5A72FD0B636c46e0B8eF2215BbEdEA3e5Ff710',
+      from: '0x4Df194648722B50E7e2a0f39fBeA0d756bB83E44',
       host: 'localhost',
       port: 7545,
       network_id: '*', // Match any network id
     },
     development: {
-      from: '0xeF5A72FD0B636c46e0B8eF2215BbEdEA3e5Ff710',
+      from: '0x4Df194648722B50E7e2a0f39fBeA0d756bB83E44',
       host: 'localhost',
       port: 7545,
       network_id: '*', // Match any network id
