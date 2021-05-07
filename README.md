@@ -1,4 +1,4 @@
-# Ignition Crowdsale
+# PAID Contracts V2
 
 Before to Start
 ---
