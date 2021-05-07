@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "paid-contracts",
+			"path": "./"
+		}
+	],
+	"settings": {
+		"json.maxItemsComputed": 10000
+	}
+}
