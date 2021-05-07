@@ -107,7 +107,7 @@ dist
 .tern-port
 
 #Hardhat files
-cache
-artifacts
+cache/
+artifacts/
 
 .openzeppelin/.session

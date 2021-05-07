@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.6.10;
+pragma solidity >=0.6.10 <=0.8.4;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AgreementModels.sol";
 import "./WorkflowStep.sol";
-// 
+//
 // @dev Controls and executes steps by whitelisted users
-// 
+//
 contract WorkflowGateway is AgreementModels, WorkflowStep {
     event AgreementCreated(uint256 indexed id);
     event AgreementModified(uint256 indexed id);
@@ -17,14 +17,14 @@ contract WorkflowGateway is AgreementModels, WorkflowStep {
     uint256 private count;
     mapping (uint256 => AgreementDocument) public agreements;
 
-    constructor() public {
+    constructor() {
     }
 
 
     // function executeStep(
     //     uint id,
     //     uint stepId
-    // ) 
+    // )
     // public returns (bool) {
     //     // Validates msg.sender
     //     // Validates workflow exists in registry
@@ -32,11 +32,11 @@ contract WorkflowGateway is AgreementModels, WorkflowStep {
     //     // Executes steps
     //     return true;
     // }
-    
+
     // function addUserToWhitelist(
     //     address user
     //     // address agreementContract
-    // ) 
+    // )
     // public returns (bool) {
     //     // Adds user to agreement contract
     //     return true;
@@ -45,12 +45,12 @@ contract WorkflowGateway is AgreementModels, WorkflowStep {
     // function removeUserFromWhitelist(
     //     address user
     //     // address agreementContract
-    // ) 
+    // )
     // public returns (bool) {
     //     // Removes user to agreement contract
     //     return true;
     // }
 
-    
+
 
 }

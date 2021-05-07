@@ -1,5 +1,12 @@
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
+require('hardhat-contract-sizer');
+require("@nomiclabs/hardhat-ethers");
+require("hardhat-deploy-ethers");
+require("hardhat-deploy");
+require("@symfoni/hardhat-react");
+require("hardhat-typechain");
+require("@typechain/ethers-v5");
 require('dotenv').config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -20,33 +27,30 @@ task("accounts", "Prints the list of accounts", async () => {
  */
 module.exports = {
 	defaultNetwork: "localhost",
-  networks: {
+	networks: {
 		localhost: {
-      url: "http://127.0.0.1:8545"
-    },
+      		url: "http://127.0.0.1:8545"
+    	},
 		mainnet: {
 			chainId: 1,
-			url: "https://mainnet.infura.io/v3/"+process.env.INFURAKEY,
-			gas: "auto",
-			gasPrice: 150,
+			url: `https://mainnet.infura.io/v3/${process.env.INFURAKEY}`,
+			gasPrice: 135000000000,
 			accounts: {
 				mnemonic:process.env.MNEMONIC
 			}
 		},
 		ropsten: {
 			chainId: 3,
-			url: "https://ropsten.infura.io/v3/"+process.env.INFURAKEY,
-			gas: "auto",
-			gasPrice: 150,
+			url: `https://ropsten.infura.io/v3/${process.env.INFURAKEY}`,
+			gasPrice: 135000000000,
 			accounts: {
 				mnemonic:process.env.MNEMONIC
 			}
 		},
 		rinkeby: {
 			chainId: 4,
-			url: "https://rinkeby.infura.io/v3/"+process.env.INFURAKEY,
-			gas: "auto",
-			gasPrice: 150,
+			url: `https://rinkeby.infura.io/v3/${process.env.INFURAKEY}`,
+			gasPrice: 135000000000,
 			accounts: {
 				mnemonic:process.env.MNEMONIC
 			}
@@ -54,8 +58,7 @@ module.exports = {
 		bsc_mainnet: {
 			chainId: 56,
 			url: process.env.URL_BSC,
-			gas: "auto",
-			gasPrice: 60,
+			gasPrice: 65000000000,
 			accounts: {
 				mnemonic:process.env.MNEMONIC
 			}
@@ -63,36 +66,40 @@ module.exports = {
 		bsc_testnet: {
 			chainId: 97,
 			url: process.env.URL_TESTNET_BSC,
-			gas: "auto",
-			gasPrice: 135,
+			gasPrice: 50000000000,
 			accounts: {
 				mnemonic:process.env.MNEMONIC
 			}
 		},
     hardhat: {
     }
-  },
-  solidity: {
-    version: "0.7.5",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
-  },
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts"
-  },
-  mocha: {
-    timeout: 20000
-  },
+	},
+	solidity: {
+		version: "0.8.0",
+		settings: {
+			optimizer: {
+				enabled: true,
+				runs: 200
+			}
+		}
+	},
+	paths: {
+	sources: "./contracts",
+	tests: "./test",
+	cache: "./cache",
+	artifacts: "./artifacts"
+	},
+	mocha: {
+	timeout: 20000
+	},
 	gasReporter: {
-    currency: 'USD',
-    gasPrice: 150
-  }
+	currency: 'USD',
+	gasPrice: 150
+	},
+	contractSizer: {
+		alphaSort: true,
+		runOnCompile: true,
+		disambiguatePaths: false,
+	}
 };
 

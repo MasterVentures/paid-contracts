@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.6.10;
+pragma solidity >=0.6.10 <=0.8.4;
 
 contract WorkflowStep {
 
 
     event WorkflowStepStart(
-        address indexed sender, 
-        uint indexed current, 
+        address indexed sender,
+        uint indexed current,
         uint indexed actorId
     );
     event WorkflowStepCompleted(
-        address indexed recipient, 
-        uint indexed next, 
-        uint indexed actorId, 
+        address indexed recipient,
+        uint indexed next,
+        uint indexed actorId,
         uint  documentId
     );
 

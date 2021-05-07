@@ -16,6 +16,7 @@ module.exports = class ContractImportBuilder {
         this.importOutput = output
     }
     addContract(name, abi, address, network) {
+		console.log("Dentro del AddContract");
         let addr = {}
         if (this.importOutput.length < 5) {
             throw new Error(
@@ -30,6 +31,7 @@ module.exports = class ContractImportBuilder {
                     addr = contractImportExisting[name].address
                 }
             }
+			console.log("fuera del IF");
             addr[network] = address
             this.contractImport[name] = {
                 // raw: require(`./build/contracts/${abi.contractName}.json`),

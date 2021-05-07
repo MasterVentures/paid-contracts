@@ -1,25 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.6.10;
+pragma solidity >=0.6.10 <=0.8.4;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/payment/escrow/Escrow.sol";
+import "@openzeppelin/contracts/utils/escrow/Escrow.sol";
 
 contract EscrowManager {
     mapping(bytes32 => Escrow) escrows;
-    constructor() 
-    public {
+    constructor() {}
 
-    } 
-
-    function withdraw() public view returns (bool) {
+    function withdraw() public pure returns (bool) {
         return true;
     }
 
-    function deposit() public view returns(bool) {
+    function deposit() public pure returns(bool) {
         return true;
     }
 
-    function has() public view returns (bool) {
+    function has() public pure returns (bool) {
         return true;
     }
 }

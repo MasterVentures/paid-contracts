@@ -4,11 +4,10 @@
   "description": "PAID contracts",
   "main": "truffle-config.js",
   "scripts": {
-    "test": "truffle test",
-    "generate-types": "typechain --target=ethers-v4 'build/contracts/*.json'",
+    "test": "npx hardhat test",
+    "generate-types": "npx hardhat typechain",
     "typecheck": "tsc --noEmit",
-    "compile": "solang_linux --target substrate contracts/**/*.sol",
-    "migrate": "truffle migrate --reset --network development"
+    "migrate": "npx hardhat run --network localhost scripts/deploy.js"
   },
   "resolutions": {
     "scrypt.js": "0.3.0"
@@ -21,6 +20,7 @@
     "@openzeppelin/contracts": "^4.1.0",
     "@openzeppelin/hardhat-upgrades": "^1.7.0",
     "@openzeppelin/test-helpers": "^0.5.10",
+    "@symfoni/hardhat-react": "^0.3.0",
     "@typechain/ethers-v5": "^6.0.5",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
@@ -28,16 +28,25 @@
     "chai": "^4.3.4",
     "chai-spies": "^1.0.0",
     "dotenv": "^8.2.0",
-    "eth-gas-reporter": "^0.2.18",
     "ethereum-waffle": "^3.3.0",
     "ethers": "^5.1.4",
-    "ganache-core": "^2.13.2",
+    "hardhat": "^2.2.1",
+    "hardhat-contract-sizer": "^2.0.3",
+    "hardhat-deploy": "^0.7.5",
+    "hardhat-deploy-ethers": "*",
     "hardhat-gas-reporter": "^1.0.4",
+    "hardhat-typechain": "^0.3.5",
     "lodash": "^4.17.21",
     "mocha": "^8.0.1",
+    "react": "^16.14.0",
     "solcvm": "0.0.2",
+    "ts-generator": "^0.1.1",
     "ts-mocha": "^7.0.0",
+    "ts-morph": "^9.0.0",
     "ts-node": "^8.10.2",
-    "web3": "^1.3.5"
+    "typechain": "^4.0.3",
+    "typescript": "^4.2.4",
+    "web3": "^1.3.5",
+    "web3modal": "^1.9.3"
   }
 }

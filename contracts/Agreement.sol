@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.6.10;
+pragma solidity >=0.6.10 <=0.8.4;
 pragma experimental ABIEncoderV2;
 
 // import "@openzeppelin/contracts/GSN/Context.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./AgreementModels.sol";
@@ -71,7 +71,7 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
-    constructor() public {}
+    constructor() {}
 
     function getPayment() public view returns (uint) {
         return _payment;
