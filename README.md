@@ -8,7 +8,7 @@ Before to Start
 - Solc v0.8.0 or +
 - Hardhat v2.2.1 or +
 
-#### For Testing
+#### For Testing (Like Ganache for Hardhat)
 ---
 ```
 npx hardhat node
@@ -16,13 +16,13 @@ npx hardhat node
 #### Start migration
 ---
 ```
-truffle migrate --network development
+npx hardhat run --network localhost --verbose
 ```
 
 #### Start truffle test
 ---
 ```
-truffle test ./test/contracts/IgnitionMultipool.js  --network development
+npx hardhat test
 ```
 
 ## environment variables (.env file)
