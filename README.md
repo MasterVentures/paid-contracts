@@ -28,8 +28,16 @@ npx hardhat test
 ## environment variables (.env file)
 ---
 MNEMONIC=
+<br/>
 INFURAKEY=
-TEST_OWNER=
+<br/>
+PRIVATE_KEY=
+<br/>
+URL_BSC=https://bsc-dataseed1.binance.org
+<br/>
+URL_TESTNET_BSC=https://data-seed-prebsc-1-s1.binance.org:8545
+<br/>
+URL_MOONBEAM_TESTNET=https://rpc.testnet.moonbeam.network
 
 ### Last ETH Gas Reporter
 ---
