@@ -2,9 +2,6 @@ require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
 require('hardhat-contract-sizer');
 require("@nomiclabs/hardhat-ethers");
-require("hardhat-deploy-ethers");
-require("hardhat-deploy");
-require("@symfoni/hardhat-react");
 require("hardhat-typechain");
 require("@typechain/ethers-v5");
 require('dotenv').config();
@@ -71,8 +68,18 @@ module.exports = {
 				mnemonic:process.env.MNEMONIC
 			}
 		},
-    hardhat: {
-    }
+		moonbase: {
+			// Need to go to Dicord channel and get DEV (coin in Moonbase Alphanet)
+			// 
+			chainId: 1287,
+			url: process.env.URL_MOONBEAM_TESTNET,
+			gasPrice: 50000000000,
+			accounts: {
+				mnemonic:process.env.MNEMONIC
+			}
+		},
+		hardhat: {
+		}
 	},
 	solidity: {
 		version: "0.8.0",
@@ -84,17 +91,17 @@ module.exports = {
 		}
 	},
 	paths: {
-	sources: "./contracts",
-	tests: "./test",
-	cache: "./cache",
-	artifacts: "./artifacts"
+		sources: "./contracts",
+		tests: "./test",
+		cache: "./cache",
+		artifacts: "./artifacts"
 	},
 	mocha: {
-	timeout: 20000
+		timeout: 20000
 	},
 	gasReporter: {
-	currency: 'USD',
-	gasPrice: 150
+		currency: 'USD',
+		gasPrice: 150
 	},
 	contractSizer: {
 		alphaSort: true,
