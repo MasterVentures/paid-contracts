@@ -70,7 +70,9 @@ module.exports = {
 		},
 		moonbase: {
 			// Need to go to Dicord channel and get DEV (coin in Moonbase Alphanet)
-			// 
+			// And Verify Procedure in https://docs.moonbeam.network/networks/testnet/
+			// Faucet https://docs.moonbeam.network/getting-started/testnet/faucet/
+			// And Explorer https://moonbase-blockscout.testnet.moonbeam.network/ (Recommend this, https://moonbase.subscan.io/ is too early)
 			chainId: 1287,
 			url: process.env.URL_MOONBEAM_TESTNET,
 			gasPrice: 50000000000,
