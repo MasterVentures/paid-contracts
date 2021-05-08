@@ -1,15 +1,16 @@
-require("@nomiclabs/hardhat-waffle");
-require("hardhat-gas-reporter");
-require('hardhat-contract-sizer');
-require("@nomiclabs/hardhat-ethers");
-require("hardhat-typechain");
-require("@typechain/ethers-v5");
-require('dotenv').config();
+import { task } from "hardhat/config";
+import "@nomiclabs/hardhat-waffle";
+import "hardhat-gas-reporter";
+import 'hardhat-contract-sizer';
+import "@nomiclabs/hardhat-ethers";
+import "hardhat-typechain";
+import "@typechain/ethers-v5";
+import 'dotenv/config';
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async () => {
-  const accounts = await ethers.getSigners();
+task("accounts", "Prints the list of accounts", async (args, hre) => {
+  const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
     console.log(account.address);
@@ -22,7 +23,7 @@ task("accounts", "Prints the list of accounts", async () => {
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-module.exports = {
+export default {
 	defaultNetwork: "localhost",
 	networks: {
 		localhost: {
@@ -103,7 +104,9 @@ module.exports = {
 	},
 	gasReporter: {
 		currency: 'USD',
-		gasPrice: 150
+		gasPrice: 150,
+		coinmarketcap: process.env.COINMARKETCAP_API_KEY,
+		maxMethodDiff: 10,
 	},
 	contractSizer: {
 		alphaSort: true,
