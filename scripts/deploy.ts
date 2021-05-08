@@ -3,10 +3,10 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
-const hre = require("hardhat");
-const fs = require('fs');
-const ContractImportBuilder = require('../abi-builder/main.js');
-const AgreementAbi = require('../artifacts/contracts/Agreement.sol/Agreement.json')
+import { run, ethers} from 'hardhat';
+import fs from 'fs';
+// import { ContractImportBuilder } from '../abi-builder/main';
+// import AgreementAbi from '../artifacts/contracts/Agreement.sol/Agreement.json';
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -17,24 +17,30 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const Agreement = await hre.ethers.getContractFactory("Agreement");
+	await run("compile");
+
+	const accounts = await ethers.getSigners();
+
+  console.log("Accounts:", accounts.map(a => a.address));
+
+  const Agreement = await ethers.getContractFactory("Agreement");
   const agreement = await Agreement.deploy();
 
   const Agreements = await agreement.deployed();
 
-	const builder = new ContractImportBuilder();
-  const path = `${__dirname}/../abi-export/agreement.js`;
-	console.log("Path: ", path);
-  builder.setOutput(path);
-	builder.onWrite = (output) => {
-    fs.writeFileSync(path, output);
-  };
-  builder.addContract(
-    'AgreementContractHardHat',
-    AgreementAbi,
-    Agreements.address,
-    'rinkeby'
-  );
+	// const builder = new ContractImportBuilder();
+  // const path = `${__dirname}/../abi-export/agreement.js`;
+	// console.log("Path: ", path);
+  // builder.setOutput(path);
+	// builder.onWrite = (output:any) => {
+  //   fs.writeFileSync(path, output);
+  // };
+  // builder.addContract(
+  //   'AgreementContractHardHat',
+  //   AgreementAbi,
+  //   Agreements.address,
+  //   'rinkeby'
+  // );
 
 	console.log("Agreements deployed to:", Agreements.address);
 }

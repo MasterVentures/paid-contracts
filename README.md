@@ -16,7 +16,7 @@ npx hardhat node
 #### Start migration
 ---
 ```
-npx hardhat run --network localhost scripts/deploy.js --verbose
+npx hardhat run --network localhost scripts/deploy.ts --verbose
 ```
 
 #### Start truffle test
