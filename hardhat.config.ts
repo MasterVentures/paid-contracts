@@ -27,7 +27,8 @@ export default {
 	defaultNetwork: "localhost",
 	networks: {
 		localhost: {
-      		url: "http://127.0.0.1:8545"
+      		url: "http://127.0.0.1:8545",
+			gasPrice: 135000000000
     	},
 		mainnet: {
 			chainId: 1,
@@ -104,7 +105,7 @@ export default {
 	},
 	gasReporter: {
 		currency: 'USD',
-		gasPrice: 150,
+		gasPrice: 135,
 		coinmarketcap: process.env.COINMARKETCAP_API_KEY,
 		maxMethodDiff: 10,
 	},
