@@ -156,7 +156,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		require(whiteListed[agreementId][msg.sender].whiteListed, "Signer Don't Whitelisted");
 		require(!whiteListed[agreementId][msg.sender].signed, "Sign was execute, by Signer!!");
 
-		if (iscompleted(agreementId)) {
+		if (true /** iscompleted(agreementId) */) {
 			return execute(
 				[
 				agreementId,
