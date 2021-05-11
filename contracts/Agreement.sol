@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 // import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./AgreementModels.sol";
@@ -16,6 +17,9 @@ contract Agreement is Context, Ownable, AgreementModels {
 
     using SafeERC20 for IERC20;
     using Address for address;
+	using SafeMath for uint256;
+	using SafeMath for uint32;
+	using SafeMath for uint8;
 
     enum AgreementStatus {
 		CREATE_SMARTAGREEMENT,
@@ -41,10 +45,10 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Agreement documents, which has references to decentralized storage and
     // onchain metadata
     mapping(uint256 => AgreementDocument) public agreements;
-	// WhiteList Peer Sign: Agreement Id -> Address Signer -> Whitelisted
-	mapping(uint32 => mapping(address => WhiteListed)) public whiteListed;
+	// WhiteList Peer Sign: Agreement Id -> address of creator -> Secuence of Peer Signer's -> Whitelisted
+	mapping(uint32 => mapping(address => mapping(uint8 => WhiteListed))) public whiteListed;
     // user - plantilla - metadata
-    mapping(address => mapping(bytes32 => bytes)) public agreementForms;
+    // mapping(address => mapping(bytes32 => bytes)) public agreementForms;
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
@@ -156,10 +160,12 @@ contract Agreement is Context, Ownable, AgreementModels {
 		}
 		// Must be the signer allow the payment for this Smart Contract
 		require(IERC20(token).allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
-		require(whiteListed[agreementId][msg.sender].whiteListed, "Signer Don't Whitelisted");
-		require(!whiteListed[agreementId][msg.sender].signed, "Sign was execute, by Signer!!");
+		uint8 peerSigner = getPeerSigner(agreementId, msg.sender);
+		address creator = agreements[agreementId].createSigner.signatory;
+		require(whiteListed[agreementId][creator][peerSigner].whiteListed, "Signer Don't Whitelisted");
+		require(!whiteListed[agreementId][creator][peerSigner].signed, "Sign was execute, by Signer!!");
 
-		if (false /** iscompleted(agreementId) */) {
+		if (iscompleted(agreementId)) {
 			return execute(
 				[
 				agreementId,
@@ -277,6 +283,10 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
+		uint8 peerSigner = getPeerSigner(_args[1], _address[2]);
+		if ((peerSigner == uint(0)) && (_args[1] != uint(AgreementStatus.CREATE_SMARTAGREEMENT))) {
+			revert("Must be Whitelisted all Peer Signer before!!");
+		}
         if (_args[1] == uint(AgreementStatus.CREATE_SMARTAGREEMENT)) {
 			// Create Agreement
             count++;
@@ -298,7 +308,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 })
             });
 			// Update Whitelist
-			whiteListed[count][_address[1]] = WhiteListed({
+			whiteListed[count][_address[1]][0] = WhiteListed({
 				whiteListed: true,
 				signed:  true,
 				creator: true,
@@ -337,7 +347,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 })
             });
 			// Update Whitelist
-			whiteListed[_args[0]][_address[2]] = WhiteListed({
+			whiteListed[_args[0]][_address[1]][peerSigner] = WhiteListed({
 				whiteListed: true,
 				signed: true,
 				creator: false,
@@ -374,6 +384,14 @@ contract Agreement is Context, Ownable, AgreementModels {
                     digest: digest
                 })
             });
+			// Update Whitelist
+			whiteListed[_args[0]][_address[1]][peerSigner] = WhiteListed({
+				whiteListed: true,
+				signed: true,
+				creator: false,
+				AgreementId: _args[0],
+				peerSigner: Party({ signatory: _address[2] })
+			});
             // Payment of PAID Services
             require(AgreementPayment(_address[0], _address[2]), "Error when Pay PAID Services");
             // Emit Event when Counterparty Sign the Agreementes
@@ -404,6 +422,14 @@ contract Agreement is Context, Ownable, AgreementModels {
                     digest: digest
                 })
             });
+			// Update Whitelist
+			whiteListed[_args[0]][_address[1]][peerSigner] = WhiteListed({
+				whiteListed: true,
+				signed: true,
+				creator: false,
+				AgreementId: _args[0],
+				peerSigner: Party({ signatory: _address[2] })
+			});
             // Emit Event when Counterparty Sign the Agreementes
             emit AgreementEvents(
                 _args[0],
@@ -428,26 +454,39 @@ contract Agreement is Context, Ownable, AgreementModels {
         return true;
     }
 
-	// TODO: Develop Method to Save all address peer signs
-	// function iscompleted(uint32 _agreementId)
-	// 	public
-	// 	view
-	// 	returns (bool)
-	// {
-	// 	uint32 amountSigner = agreements[_agreementId].amountSigner;
+	function iscompleted(uint32 _agreementId)
+		public
+		view
+		returns (bool)
+	{
+		uint8 amountSigner = uint8(agreements[_agreementId].amountSigner);
+		address creator = agreements[_agreementId].createSigner.signatory;
+		for (uint8 i = 0; i < amountSigner; i++) {
+			if (!whiteListed[_agreementId][creator][i].signed) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-	// 	for (uint i = 0; i < amountSigner; i++) {
-	// 		address _address = _addresses[i];
-	// 		if (!whiteListed[_agreementId][_address].signed) {
-	// 			return false;
-	// 		}
-	// 	}
-	// 	return true;
-	// }
+	function getPeerSigner(uint32 _agreementId, address counterParty)
+		internal
+		view
+		returns (uint8)
+	{
+		uint8 amountSigner = uint8(agreements[_agreementId].amountSigner);
+		address creator = agreements[_agreementId].createSigner.signatory;
+		for (uint8 i = 0; i < amountSigner; i++) {
+			if (counterParty == whiteListed[_agreementId][creator][i].peerSigner.signatory) {
+				return i;
+			}
+		}
+		return 0;
+	}
 
 	function addWhitelisted (
 		uint32 agreementId,
-		uint32 amountSigner,
+		uint8 amountSigner,
 		address[] memory _addresses
 	)
 		external returns (bool)
@@ -457,13 +496,14 @@ contract Agreement is Context, Ownable, AgreementModels {
 			"Can't add Peer Signer's"
 		);
 		require(
-			_addresses.length == amountSigner,
-			"The Amount Signer is not the same Array length "
+			_addresses.length == amountSigner.sub(uint(1)),
+			"The number of signing peer is not the same Array length "
 		);
-		for (uint i = 0; i < amountSigner; i++) {
+		address creator = agreements[agreementId].createSigner.signatory;
+		for (uint8 i = 0; i < amountSigner; i++) {
 			address _address = _addresses[i];
 			if (_address != msg.sender) {
-				whiteListed[agreementId][_address] =
+				whiteListed[agreementId][creator][i.add(1)] =
 						WhiteListed ({
 							whiteListed: true,
 							signed:false,
@@ -476,12 +516,12 @@ contract Agreement is Context, Ownable, AgreementModels {
 	}
 
 
-    function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public view returns (bytes memory) {
-        require(isCounterparty == true &&
-         msg.sender == agreements[agreementId].createSigner.signatory);
+    // function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public view returns (bytes memory) {
+    //     require(isCounterparty == true &&
+    //      msg.sender == agreements[agreementId].createSigner.signatory);
 
-        return agreementForms[msg.sender][formId];
-    }
+    //     return agreementForms[msg.sender][formId];
+    // }
 
     function hasValidSA(uint256 _id) public view returns (bool) {
         return agreements[_id].validUntilSA >= uint32(block.timestamp);
