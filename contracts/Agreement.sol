@@ -18,56 +18,33 @@ contract Agreement is Context, Ownable, AgreementModels {
     using Address for address;
 
     enum AgreementStatus {
-        PARTY_INIT,
-        COUNTERPARTY_SIGNED,
-        PUBLISHED,
-        DISPUTE_INIT,
-        DISPUTE_ACCEPTED,
-        DISPUTE_REJECTED,
-        VERDICT_PARTY_FOR,
-        VERDICT_PARTY_AGAINST,
-        ARBITRATION,
-        COUNTERPARTY_REJECTED
+		CREATE_SMARTAGREEMENT,
+        PENDING_SIGNATURE,
+        COMPLETED,
+		DECLINED,
+		EXPIRED
+        // DISPUTE_INIT,
+        // DISPUTE_ACCEPTED,
+        // DISPUTE_REJECTED,
+        // VERDICT_PARTY_FOR,
+        // VERDICT_PARTY_AGAINST,
+        // ARBITRATION,
+        // COUNTERPARTY_REJECTED
     }
 
-    event AgreementEvents(
-        uint256 indexed id,
-        bytes32 formTemplateId,
-        address indexed partySource,
-        address indexed partyDestination,
-        string agreementStoredReference,
-        uint status
-    );
-    //Events of Payments
-    event PaymentEvents(
-        uint payments,
-        address sender,
-        address token
-    );
-    //Events of Change Payments
-    event ChangePaymentEvents(
-        uint oldPayment,
-        uint newPayment,
-        address owner
-    );
-    // Event of change Recipient
-    event ChangeRecipientEvents(
-        address oldRecipient,
-        address newRecipient,
-        address owner
-    );
     // Value of Payment Value
     uint private _payment;
     // Address to Receive the Payment
     address private _recipient;
     // ID for Smart Agreements
-    uint256 private count;
+    uint32 private count;
     // Agreement documents, which has references to decentralized storage and
     // onchain metadata
     mapping(uint256 => AgreementDocument) public agreements;
+	// WhiteList Peer Sign: Agreement Id -> Address Signer -> Whitelisted
+	mapping(uint32 => mapping(address => WhiteListed)) public whiteListed;
     // user - plantilla - metadata
     mapping(address => mapping(bytes32 => bytes)) public agreementForms;
-
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
@@ -110,187 +87,314 @@ contract Agreement is Context, Ownable, AgreementModels {
         return true;
     }
 
-    function partyCreate(
-        IERC20 token,
-        uint256 validUntil,
-        address counterparty,
+	function create(
+		address token,
+		uint32 validUntilSign,
+		uint32 validUntilSA,
+		uint32 amountSigner,
         string memory multiaddrReference,
-        bytes32 agreementFormTemplateId,
-        bytes memory agreementForm,
-        bytes memory digest
-    )
-        public
-        returns (
-            uint256
-        )
-    {
-        return execute(
-            token,
+		bytes32 agreementFormTemplateId,
+		bytes32 agreementForm,
+        bytes32 digest
+	)
+		public
+		returns (
+			uint256
+		)
+	{
+		return execute(
+			[uint32(0),
+			uint32(AgreementStatus.CREATE_SMARTAGREEMENT),
+			amountSigner,
+			uint32(block.timestamp),
+            uint32(block.timestamp),
+			validUntilSign,
+			validUntilSA],
+			[token,
             msg.sender,
-            counterparty,
-            uint256(0),
-            validUntil,
+			address(0)],
             multiaddrReference,
             agreementFormTemplateId,
             agreementForm,
-            uint(AgreementStatus.PARTY_INIT),
-            block.timestamp,
-            block.timestamp,
             digest
         );
-    }
+	}
 
-    function counterPartiesSign(
-        IERC20 token,
-        uint agreementId,
-        uint256 validUntil,
-        string memory multiaddrReference,
-        bytes32 agreementFormTemplateId,
-        bytes memory agreementForm,
-        bytes memory digest
+    function pendingSign(
+		uint32 agreementId,
+		uint32 validUntilSign,
+		uint32 validUntilSA,
+		string memory multiaddrReference,
+        bytes32 agreementForm,
+        bytes32 digest
     )
         public
         returns (
             uint256
         )
     {
-        require(token.allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
+		AgreementDocument memory doc = agreements[agreementId];
+		// Validate if is Valid to Sign
+		require(
+			doc.status == uint8(AgreementStatus.EXPIRED),
+			"Smart Agreements has Expired"
+		);
+		require(
+			doc.status == uint8(AgreementStatus.DECLINED),
+			"Smart Agreements has Declined"
+		);
+		if (!doc.peersSigned) {
+			if (validUntilSign >= uint32(block.timestamp)) {
+				doc.status = uint32(AgreementStatus.EXPIRED);
+				revert("Time has expired to sign the Smart Agreement");
+			}
+		} else {
+			revert("All Signer and Signed th Smart Agreement");
+		}
+		// Must be the signer allow the payment for this Smart Contract
+		require(IERC20(doc.token).allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
+		require(whiteListed[agreementId][msg.sender].whiteListed, "Signer Don't Whitelisted");
+		require(!whiteListed[agreementId][msg.sender].signed, "Sign was execute, by Signer!!");
 
+		if (iscompleted(agreementId)) {
+			return execute(
+				[
+				agreementId,
+				uint32(AgreementStatus.COMPLETED),
+				doc.amountSigner,
+				doc.created_at,
+				uint32(block.timestamp),
+				validUntilSign,
+				validUntilSA],
+				[doc.token,
+				doc.createSigner.signatory,
+				msg.sender],
+				multiaddrReference,
+				doc.agreementFormTemplateId,
+				agreementForm,
+				digest
+			);
+		} else {
+			return execute(
+				[agreementId,
+				uint32(AgreementStatus.PENDING_SIGNATURE),
+				doc.amountSigner,
+				doc.created_at,
+				uint32(block.timestamp),
+				validUntilSign,
+				validUntilSA],
+				[doc.token,
+				doc.createSigner.signatory,
+				msg.sender],
+				multiaddrReference,
+				doc.agreementFormTemplateId,
+				agreementForm,
+				digest
+			);
+		}
+
+    }
+
+
+    function declined(
+		uint32 agreementId,
+		string memory multiaddrReference,
+        bytes32 agreementForm,
+        bytes32 digest
+    )
+        public
+        returns (
+            uint256
+        )
+    {
+		// Validate if is Valid to Sign
+		require(
+			agreements[agreementId].status == uint8(AgreementStatus.EXPIRED),
+			"Smart Agreements has Expired"
+		);
+		require(
+			agreements[agreementId].status == uint8(AgreementStatus.DECLINED),
+			"Smart Agreements has Declined"
+		);
+		if (!agreements[agreementId].peersSigned) {
+			if (agreements[agreementId].validUntilSign >= uint32(block.timestamp)) {
+				agreements[agreementId].status = uint8(AgreementStatus.EXPIRED);
+				revert("Time has expired to sign the Smart Agreement");
+			}
+		} else {
+			revert("All Signer and Signed th Smart Agreement");
+		}
         AgreementDocument memory doc = agreements[agreementId];
         return execute(
-            token,
-            doc.fromSigner.signatory,
-            msg.sender,
-            agreementId,
-            validUntil,
-            multiaddrReference,
-            agreementFormTemplateId,
-            agreementForm,
-            uint(AgreementStatus.COUNTERPARTY_SIGNED),
-            doc.created_at,
-            block.timestamp,
-            digest
+			[agreementId,
+			uint32(AgreementStatus.DECLINED),
+			doc.amountSigner,
+			doc.created_at,
+			uint32(block.timestamp),
+			doc.validUntilSign,
+			doc.validUntilSA],
+			[doc.token,
+			doc.createSigner.signatory,
+			msg.sender],
+			multiaddrReference,
+			doc.agreementFormTemplateId,
+			agreementForm,
+			digest
         );
     }
 
-    function counterPartiesReject(
-        IERC20 token,
-        uint agreementId,
-        uint256 validUntil,
-        string memory multiaddrReference,
-        bytes32 agreementFormTemplateId,
-        bytes memory agreementForm,
-        bytes memory digest
-    )
-        public
-        returns (
-            uint256
-        )
-    {
-        AgreementDocument memory doc = agreements[agreementId];
-        return execute(
-            token,
-            doc.fromSigner.signatory,
-            msg.sender,
-            agreementId,
-            validUntil,
-            multiaddrReference,
-            agreementFormTemplateId,
-            agreementForm,
-            uint(AgreementStatus.COUNTERPARTY_REJECTED),
-            doc.created_at,
-            block.timestamp,
-            digest
-        );
-    }
-
-    // Creates an agreement document
-    // Contains a reference for content stored off chain
+	/** Creates an agreement document
+     * Contains a reference for content stored off chain
+	 * @param _args[0] agreementId uint32 value, index of the Smart Agreement Id
+	 * @param _args[1] status uint32 value (enum AgreementStatus), indicate status of Smart
+	 * @param _args[2] amountSigner uint32 value, indicate amount of Signer
+	 * @param _args[3] created_at uint32 value, indicate create date
+	 * @param _args[4] update_at uint32 value, indicate update date
+	 * @param _args[5] validUntilSign uint32 value, indicate valid date for signed, after that the Smart Agreement is Expired
+	 * @param _args[6] validUntilSA uint32 value, indicate valid date of the Smart Agreement, After all Peer Signer, signed the Smart Agreement
+	 * @param _address[0] token of token, used for pay the cost of Smart Agreement
+	 * @param _address[1] party of party Creator of Smart Agreement
+	 * @param _address[2] counterPrty of Peer Signer of Smart Agreement (can be any of the Peers Signer)
+	 * @param multiaddrReference URL into IPFS of the Smart Agreement Template, full filled
+	 * @param agreementFormTemplateId Id of Smart Agreement Template
+	 * @param agreementForm SHA3, of Samrt Agreement Template Full Filled
+	 * @param digest Digest of Document Signed
+	 */
     function execute(
-        IERC20 token,
-        address party,
-        address counterparty,
-        uint256 agreementId,
-        uint256 validUntil,
+		uint32[7] memory _args,
+		address[3] memory _address,
         string memory multiaddrReference,
+		bytes32 agreementForm,
         bytes32 agreementFormTemplateId,
-        bytes memory agreementForm,
-        uint status,
-        uint created_at,
-        uint updated_at,
-        bytes memory digest
+        bytes32 digest
     )
         internal
         returns (
             uint256
         )
     {
-        if (status == uint(AgreementStatus.PARTY_INIT)) {
+        if (_args[1] == uint(AgreementStatus.CREATE_SMARTAGREEMENT)) {
+			// Create Agreement
             count++;
             agreements[count] = AgreementDocument({
-                fromSigner: Party({ signatory: party }),
-                toSigner: Party({ signatory: counterparty }),
-                escrowed: false,
-                validUntil: validUntil,
-                status: status,
+				escrowed: false,
+				peersSigned: false,
+				status: _args[1],
+				amountSigner: _args[2],
+				created_at: _args[3],
+                updated_at: _args[4],
+                validUntilSign: _args[5],
+				validUntilSA: _args[6],
+				createSigner: Party({ signatory: _address[1] }),
                 agreementForm: agreementForm,
                 agreementFormTemplateId: agreementFormTemplateId,
-                created_at: created_at,
-                updated_at: updated_at,
                 file: Content({
                     multiaddressReference: multiaddrReference,
                     digest: digest
                 })
             });
+			// Update Whitelist
+			whiteListed[count][_address[1]] = WhiteListed({
+				whiteListed: true,
+				signed:  true,
+				creator: true,
+				AgreementId: count,
+				peerSigner: Party({ signatory: _address[1] })
+			});
+			// Payment of PAID Services
+            require(AgreementPayment(_address[0], _address[1]), "Error when Pay PAID Services");
             // Emit Event when Create Agreements
             emit AgreementEvents(
                 count,
                 agreementFormTemplateId,
-                party,
-                counterparty,
+                _address[1],
+                _address[2],
                 multiaddrReference,
-                status
+                _args[1]
             );
             return count;
-        } else if (status == uint(AgreementStatus.COUNTERPARTY_SIGNED)) {
-            agreements[agreementId] = AgreementDocument({
-                fromSigner: Party({ signatory: party }),
-                toSigner: Party({ signatory: counterparty }),
-                escrowed: false,
-                validUntil: validUntil,
-                status: status,
+		} else if (_args[1]  == uint(AgreementStatus.PENDING_SIGNATURE)) {
+			// Update Agreement
+            agreements[_args[0]] = AgreementDocument({
+				escrowed: false,
+				peersSigned: false,
+				status: _args[1],
+				amountSigner: _args[2],
+				created_at: _args[3],
+                updated_at: _args[4],
+                validUntilSign: _args[5],
+				validUntilSA: _args[6],
+				createSigner: Party({ signatory: _address[1] }),
                 agreementForm: agreementForm,
                 agreementFormTemplateId: agreementFormTemplateId,
-                created_at: created_at,
-                updated_at: updated_at,
+                file: Content({
+                    multiaddressReference: multiaddrReference,
+                    digest: digest
+                })
+            });
+			// Update Whitelist
+			whiteListed[_args[0]][_address[2]] = WhiteListed({
+				whiteListed: true,
+				signed: true,
+				creator: false,
+				AgreementId: _args[0],
+				peerSigner: Party({ signatory: _address[2] })
+			});
+            // Payment of PAID Services
+            require(AgreementPayment(_address[0], _address[2]), "Error when Pay PAID Services");
+            // Emit Event when Counterparty Sign the Agreementes
+            emit AgreementEvents(
+                _args[0],
+                agreementFormTemplateId,
+                _address[1],
+                _address[2],
+                multiaddrReference,
+                _args[1]
+            );
+            return _args[0];
+        } else if (_args[1]  == uint(AgreementStatus.COMPLETED)) {
+            agreements[_args[0]] = AgreementDocument({
+				escrowed: false,
+				peersSigned: true,
+				status: _args[1],
+				amountSigner: _args[2],
+				created_at: _args[3],
+                updated_at: _args[4],
+                validUntilSign: _args[5],
+				validUntilSA: _args[6],
+				createSigner: Party({ signatory: _address[1] }),
+				agreementForm: agreementForm,
+                agreementFormTemplateId: agreementFormTemplateId,
                 file: Content({
                     multiaddressReference: multiaddrReference,
                     digest: digest
                 })
             });
             // Payment of PAID Services
-            require(AgreementPayment(token, counterparty), "Error when Pay PAID Services");
+            require(AgreementPayment(_address[0], _address[2]), "Error when Pay PAID Services");
             // Emit Event when Counterparty Sign the Agreementes
             emit AgreementEvents(
-                agreementId,
+                _args[0],
                 agreementFormTemplateId,
-                party,
-                counterparty,
+                _address[1],
+                _address[2],
                 multiaddrReference,
-                status
+                _args[1]
             );
-            return agreementId;
-        } else if (status == uint(AgreementStatus.COUNTERPARTY_REJECTED)) {
-            agreements[agreementId] = AgreementDocument({
-                fromSigner: Party({ signatory: party }),
-                toSigner: Party({ signatory: counterparty }),
-                escrowed: false,
-                validUntil: validUntil,
-                status: status,
-                agreementForm: agreementForm,
+            return _args[0];
+        } else if (_args[1] == uint(AgreementStatus.DECLINED)) {
+            agreements[_args[0]] = AgreementDocument({
+				escrowed: false,
+				peersSigned: true,
+				status: _args[1],
+				amountSigner: _args[2],
+				created_at: _args[3],
+                updated_at: _args[4],
+                validUntilSign: _args[5],
+				validUntilSA: _args[6],
+				createSigner: Party({ signatory: _address[1] }),
+				agreementForm: agreementForm,
                 agreementFormTemplateId: agreementFormTemplateId,
-                created_at: created_at,
-                updated_at: updated_at,
                 file: Content({
                     multiaddressReference: multiaddrReference,
                     digest: digest
@@ -298,14 +402,14 @@ contract Agreement is Context, Ownable, AgreementModels {
             });
             // Emit Event when Counterparty Sign the Agreementes
             emit AgreementEvents(
-                agreementId,
+                _args[0],
                 agreementFormTemplateId,
-                party,
-                counterparty,
+                _address[1],
+                _address[2],
                 multiaddrReference,
-                status
+                _args[1]
             );
-            return agreementId;
+            return _args[0];
         } else {
             return uint256(0);
         }
@@ -320,32 +424,74 @@ contract Agreement is Context, Ownable, AgreementModels {
         return true;
     }
 
+	// TODO: Develop Method to Save all address peer signs
+	// function iscompleted(uint32 _agreementId)
+	// 	public
+	// 	view
+	// 	returns (bool)
+	// {
+	// 	uint32 amountSigner = agreements[_agreementId].amountSigner;
+
+	// 	for (uint i = 0; i < amountSigner; i++) {
+	// 		address _address = _addresses[i];
+	// 		if (!whiteListed[_agreementId][_address].signed) {
+	// 			return false;
+	// 		}
+	// 	}
+	// 	return true;
+	// }
+
+	function addWhitelisted (
+		uint32 agreementId,
+		uint32 amountSigner,
+		address[] memory _addresses
+	)
+		internal view returns (bool)
+	{
+		require(
+			agreements[agreementId].status == uint8(AgreementStatus.CREATE_SMARTAGREEMENT),
+			"Can't add Peer Signer's"
+		);
+		require(
+			_addresses.length == amountSigner,
+			"The Amount Signer is not the same Array length "
+		);
+		for (uint i = 0; i < amountSigner; i++) {
+			address _address = _addresses[i];
+			if (_address != msg.sender) {
+				whiteListed[agreementId][_address] =
+						whiteListed ({
+							whiteListed: true,
+							signed:false,
+							creator:false,
+							AgreementId: agreementId,
+							peerSigner: Party({ signatory: _address })
+						});
+			}
+		}
+	}
+
 
     function getFormById(uint agreementId, bool isCounterparty, bytes32 formId) public view returns (bytes memory) {
         require(isCounterparty == true &&
-         msg.sender == agreements[agreementId].toSigner.signatory);
+         msg.sender == agreements[agreementId].createSigner.signatory);
 
         return agreementForms[msg.sender][formId];
     }
 
-    function has(uint256 id) public view returns (bool) {
-        return agreements[id].validUntil != 0;
+    function hasValidSA(uint256 _id) public view returns (bool) {
+        return agreements[_id].validUntilSA >= uint32(block.timestamp);
     }
 
-    function get(uint256 id) public view returns (AgreementDocument memory) {
-        require(agreements[id].validUntil != 0, "Invalid agreement id");
-        return agreements[id];
-    }
-    // Get balance of the Toekn ERC20, of the address recipient
-    function getBalanceToken(IERC20 token, address recipient) public view returns (uint256) {
-        return token.balanceOf(recipient);
-    }
-
-    function AgreementPayment(IERC20 token, address sender) private returns (bool) {
+	function hasValidToSign(uint256 _id) public view returns (bool) {
+		if (agreements[_id].peersSigned) {return true;}
+		return agreements[_id].validUntilSign > uint32(block.timestamp);
+	}
+    function AgreementPayment(address token, address sender) private returns (bool) {
         require(msg.sender == sender, "Sender in not the Same to Sign the Transaction");
-        require(_payment <= token.balanceOf(sender), "Enough Balance for this Operation");
+        require(_payment <= IERC20(token).balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        token.safeTransferFrom(msg.sender, _recipient, _payment);
+        IERC20(token).safeTransferFrom(msg.sender, _recipient, _payment);
         //Emit Event for Payment
         emit PaymentEvents(
             _payment,
