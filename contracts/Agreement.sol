@@ -102,6 +102,8 @@ contract Agreement is Context, Ownable, AgreementModels {
 			uint256
 		)
 	{
+		// Must be the signer allow the payment for this Smart Contract
+		require(IERC20(token).allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
 		return execute(
 			[uint32(0),
 			uint32(AgreementStatus.CREATE_SMARTAGREEMENT),
@@ -121,6 +123,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 	}
 
     function pendingSign(
+		address token,
 		uint32 agreementId,
 		uint32 validUntilSign,
 		uint32 validUntilSA,
@@ -152,11 +155,11 @@ contract Agreement is Context, Ownable, AgreementModels {
 			revert("All Signer and Signed th Smart Agreement");
 		}
 		// Must be the signer allow the payment for this Smart Contract
-		require(IERC20(doc.token).allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
+		require(IERC20(token).allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
 		require(whiteListed[agreementId][msg.sender].whiteListed, "Signer Don't Whitelisted");
 		require(!whiteListed[agreementId][msg.sender].signed, "Sign was execute, by Signer!!");
 
-		if (true /** iscompleted(agreementId) */) {
+		if (false /** iscompleted(agreementId) */) {
 			return execute(
 				[
 				agreementId,
@@ -166,7 +169,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 				uint32(block.timestamp),
 				validUntilSign,
 				validUntilSA],
-				[doc.token,
+				[token,
 				doc.createSigner.signatory,
 				msg.sender],
 				multiaddrReference,
@@ -183,7 +186,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 				uint32(block.timestamp),
 				validUntilSign,
 				validUntilSA],
-				[doc.token,
+				[token,
 				doc.createSigner.signatory,
 				msg.sender],
 				multiaddrReference,
@@ -198,6 +201,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 
     function declined(
 		uint32 agreementId,
+		address token,
 		string memory multiaddrReference,
         bytes32 agreementForm,
         bytes32 digest
@@ -233,7 +237,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 			uint32(block.timestamp),
 			doc.validUntilSign,
 			doc.validUntilSA],
-			[doc.token,
+			[token,
 			doc.createSigner.signatory,
 			msg.sender],
 			multiaddrReference,
@@ -446,7 +450,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		uint32 amountSigner,
 		address[] memory _addresses
 	)
-		internal view returns (bool)
+		external returns (bool)
 	{
 		require(
 			agreements[agreementId].status == uint8(AgreementStatus.CREATE_SMARTAGREEMENT),
@@ -460,7 +464,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 			address _address = _addresses[i];
 			if (_address != msg.sender) {
 				whiteListed[agreementId][_address] =
-						whiteListed ({
+						WhiteListed ({
 							whiteListed: true,
 							signed:false,
 							creator:false,

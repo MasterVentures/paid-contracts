@@ -34,7 +34,11 @@ interface WorkflowGatewayInterface extends ethers.utils.Interface {
     "AgreementClosed(uint256)": EventFragment;
     "AgreementCreated(uint256)": EventFragment;
     "AgreementDisputed(uint256)": EventFragment;
+    "AgreementEvents(uint256,bytes32,address,address,string,uint256)": EventFragment;
     "AgreementModified(uint256)": EventFragment;
+    "ChangePaymentEvents(uint256,uint256,address)": EventFragment;
+    "ChangeRecipientEvents(address,address,address)": EventFragment;
+    "PaymentEvents(uint256,address,address)": EventFragment;
     "WorkflowStepCompleted(address,uint256,uint256,uint256)": EventFragment;
     "WorkflowStepStart(address,uint256,uint256)": EventFragment;
   };
@@ -42,7 +46,11 @@ interface WorkflowGatewayInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "AgreementClosed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AgreementCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AgreementDisputed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AgreementEvents"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "AgreementModified"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChangePaymentEvents"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ChangeRecipientEvents"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PaymentEvents"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WorkflowStepCompleted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "WorkflowStepStart"): EventFragment;
 }
@@ -96,26 +104,30 @@ export class WorkflowGateway extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -128,26 +140,30 @@ export class WorkflowGateway extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -161,26 +177,30 @@ export class WorkflowGateway extends Contract {
     overrides?: CallOverrides
   ): Promise<
     [
-      [string] & { signatory: string },
-      [string] & { signatory: string },
       boolean,
-      BigNumber,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
       string,
       string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
       [string, string] & { multiaddressReference: string; digest: string }
     ] & {
-      fromSigner: [string] & { signatory: string };
-      toSigner: [string] & { signatory: string };
       escrowed: boolean;
-      validUntil: BigNumber;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
       agreementForm: string;
       agreementFormTemplateId: string;
-      status: BigNumber;
-      created_at: BigNumber;
-      updated_at: BigNumber;
       file: [string, string] & {
         multiaddressReference: string;
         digest: string;
@@ -193,26 +213,30 @@ export class WorkflowGateway extends Contract {
     overrides?: CallOverrides
   ): Promise<
     [
-      [string] & { signatory: string },
-      [string] & { signatory: string },
       boolean,
-      BigNumber,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
       string,
       string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
       [string, string] & { multiaddressReference: string; digest: string }
     ] & {
-      fromSigner: [string] & { signatory: string };
-      toSigner: [string] & { signatory: string };
       escrowed: boolean;
-      validUntil: BigNumber;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
       agreementForm: string;
       agreementFormTemplateId: string;
-      status: BigNumber;
-      created_at: BigNumber;
-      updated_at: BigNumber;
       file: [string, string] & {
         multiaddressReference: string;
         digest: string;
@@ -226,26 +250,30 @@ export class WorkflowGateway extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -258,26 +286,30 @@ export class WorkflowGateway extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -299,9 +331,55 @@ export class WorkflowGateway extends Contract {
       id: BigNumberish | null
     ): TypedEventFilter<[BigNumber], { id: BigNumber }>;
 
+    AgreementEvents(
+      id: BigNumberish | null,
+      formTemplateId: null,
+      partySource: string | null,
+      partyDestination: string | null,
+      agreementStoredReference: null,
+      status: null
+    ): TypedEventFilter<
+      [BigNumber, string, string, string, string, BigNumber],
+      {
+        id: BigNumber;
+        formTemplateId: string;
+        partySource: string;
+        partyDestination: string;
+        agreementStoredReference: string;
+        status: BigNumber;
+      }
+    >;
+
     AgreementModified(
       id: BigNumberish | null
     ): TypedEventFilter<[BigNumber], { id: BigNumber }>;
+
+    ChangePaymentEvents(
+      oldPayment: null,
+      newPayment: null,
+      owner: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, string],
+      { oldPayment: BigNumber; newPayment: BigNumber; owner: string }
+    >;
+
+    ChangeRecipientEvents(
+      oldRecipient: null,
+      newRecipient: null,
+      owner: null
+    ): TypedEventFilter<
+      [string, string, string],
+      { oldRecipient: string; newRecipient: string; owner: string }
+    >;
+
+    PaymentEvents(
+      payments: null,
+      sender: null,
+      token: null
+    ): TypedEventFilter<
+      [BigNumber, string, string],
+      { payments: BigNumber; sender: string; token: string }
+    >;
 
     WorkflowStepCompleted(
       recipient: string | null,

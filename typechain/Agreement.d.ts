@@ -21,25 +21,30 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface AgreementInterface extends ethers.utils.Interface {
   functions: {
+    "addWhitelisted(uint32,uint32,address[])": FunctionFragment;
     "agreementForms(address,bytes32)": FunctionFragment;
     "agreements(uint256)": FunctionFragment;
-    "counterPartiesReject(address,uint256,uint256,string,bytes32,bytes,bytes)": FunctionFragment;
-    "counterPartiesSign(address,uint256,uint256,string,bytes32,bytes,bytes)": FunctionFragment;
-    "get(uint256)": FunctionFragment;
-    "getBalanceToken(address,address)": FunctionFragment;
+    "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)": FunctionFragment;
+    "declined(uint32,address,string,bytes32,bytes32)": FunctionFragment;
     "getFormById(uint256,bool,bytes32)": FunctionFragment;
     "getPayment()": FunctionFragment;
     "getRecipient()": FunctionFragment;
-    "has(uint256)": FunctionFragment;
+    "hasValidSA(uint256)": FunctionFragment;
+    "hasValidToSign(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
-    "partyCreate(address,uint256,address,string,bytes32,bytes,bytes)": FunctionFragment;
+    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setAgreementTemplate(bytes32,bytes)": FunctionFragment;
     "setPayment(uint256)": FunctionFragment;
     "setRecipient(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "whiteListed(uint32,address)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "addWhitelisted",
+    values: [BigNumberish, BigNumberish, string[]]
+  ): string;
   encodeFunctionData(
     functionFragment: "agreementForms",
     values: [string, BytesLike]
@@ -49,9 +54,10 @@ interface AgreementInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "counterPartiesReject",
+    functionFragment: "create",
     values: [
       string,
+      BigNumberish,
       BigNumberish,
       BigNumberish,
       string,
@@ -61,21 +67,8 @@ interface AgreementInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "counterPartiesSign",
-    values: [
-      string,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BytesLike,
-      BytesLike,
-      BytesLike
-    ]
-  ): string;
-  encodeFunctionData(functionFragment: "get", values: [BigNumberish]): string;
-  encodeFunctionData(
-    functionFragment: "getBalanceToken",
-    values: [string, string]
+    functionFragment: "declined",
+    values: [BigNumberish, string, string, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getFormById",
@@ -89,16 +82,23 @@ interface AgreementInterface extends ethers.utils.Interface {
     functionFragment: "getRecipient",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "has", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "hasValidSA",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "hasValidToSign",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "partyCreate",
+    functionFragment: "pendingSign",
     values: [
       string,
       BigNumberish,
+      BigNumberish,
+      BigNumberish,
       string,
-      string,
-      BytesLike,
       BytesLike,
       BytesLike
     ]
@@ -123,25 +123,22 @@ interface AgreementInterface extends ethers.utils.Interface {
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "whiteListed",
+    values: [BigNumberish, string]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "addWhitelisted",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "agreementForms",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "agreements", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "counterPartiesReject",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "counterPartiesSign",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "get", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getBalanceToken",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "create", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "declined", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getFormById",
     data: BytesLike
@@ -151,10 +148,14 @@ interface AgreementInterface extends ethers.utils.Interface {
     functionFragment: "getRecipient",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "has", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "hasValidSA", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "hasValidToSign",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "partyCreate",
+    functionFragment: "pendingSign",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -172,6 +173,10 @@ interface AgreementInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "whiteListed",
     data: BytesLike
   ): Result;
 
@@ -234,6 +239,20 @@ export class Agreement extends Contract {
   interface: AgreementInterface;
 
   functions: {
+    addWhitelisted(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "addWhitelisted(uint32,uint32,address[])"(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     agreementForms(
       arg0: string,
       arg1: BytesLike,
@@ -251,26 +270,30 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -283,26 +306,30 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -310,10 +337,11 @@ export class Agreement extends Contract {
       }
     >;
 
-    counterPartiesReject(
+    create(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -321,10 +349,11 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "counterPartiesReject(address,uint256,uint256,string,bytes32,bytes,bytes)"(
+    "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)"(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -332,107 +361,23 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    counterPartiesSign(
-      token: string,
+    declined(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "counterPartiesSign(address,uint256,uint256,string,bytes32,bytes,bytes)"(
-      token: string,
+    "declined(uint32,address,string,bytes32,bytes32)"(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    get(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [
-          [string] & { signatory: string },
-          [string] & { signatory: string },
-          boolean,
-          BigNumber,
-          string,
-          string,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          [string, string] & { multiaddressReference: string; digest: string }
-        ] & {
-          fromSigner: [string] & { signatory: string };
-          toSigner: [string] & { signatory: string };
-          escrowed: boolean;
-          validUntil: BigNumber;
-          agreementForm: string;
-          agreementFormTemplateId: string;
-          status: BigNumber;
-          created_at: BigNumber;
-          updated_at: BigNumber;
-          file: [string, string] & {
-            multiaddressReference: string;
-            digest: string;
-          };
-        }
-      ]
-    >;
-
-    "get(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [
-          [string] & { signatory: string },
-          [string] & { signatory: string },
-          boolean,
-          BigNumber,
-          string,
-          string,
-          BigNumber,
-          BigNumber,
-          BigNumber,
-          [string, string] & { multiaddressReference: string; digest: string }
-        ] & {
-          fromSigner: [string] & { signatory: string };
-          toSigner: [string] & { signatory: string };
-          escrowed: boolean;
-          validUntil: BigNumber;
-          agreementForm: string;
-          agreementFormTemplateId: string;
-          status: BigNumber;
-          created_at: BigNumber;
-          updated_at: BigNumber;
-          file: [string, string] & {
-            multiaddressReference: string;
-            digest: string;
-          };
-        }
-      ]
-    >;
-
-    getBalanceToken(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    "getBalanceToken(address,address)"(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     getFormById(
       agreementId: BigNumberish,
@@ -456,10 +401,23 @@ export class Agreement extends Contract {
 
     "getRecipient()"(overrides?: CallOverrides): Promise<[string]>;
 
-    has(id: BigNumberish, overrides?: CallOverrides): Promise<[boolean]>;
+    hasValidSA(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
-    "has(uint256)"(
-      id: BigNumberish,
+    "hasValidSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    hasValidToSign(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "hasValidToSign(uint256)"(
+      _id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -467,23 +425,23 @@ export class Agreement extends Contract {
 
     "owner()"(overrides?: CallOverrides): Promise<[string]>;
 
-    partyCreate(
+    pendingSign(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "partyCreate(address,uint256,address,string,bytes32,bytes,bytes)"(
+    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -538,7 +496,49 @@ export class Agreement extends Contract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    whiteListed(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, boolean, boolean, number, [string] & { signatory: string }] & {
+        whiteListed: boolean;
+        signed: boolean;
+        creator: boolean;
+        AgreementId: number;
+        peerSigner: [string] & { signatory: string };
+      }
+    >;
+
+    "whiteListed(uint32,address)"(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, boolean, boolean, number, [string] & { signatory: string }] & {
+        whiteListed: boolean;
+        signed: boolean;
+        creator: boolean;
+        AgreementId: number;
+        peerSigner: [string] & { signatory: string };
+      }
+    >;
   };
+
+  addWhitelisted(
+    agreementId: BigNumberish,
+    amountSigner: BigNumberish,
+    _addresses: string[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "addWhitelisted(uint32,uint32,address[])"(
+    agreementId: BigNumberish,
+    amountSigner: BigNumberish,
+    _addresses: string[],
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   agreementForms(
     arg0: string,
@@ -557,26 +557,30 @@ export class Agreement extends Contract {
     overrides?: CallOverrides
   ): Promise<
     [
-      [string] & { signatory: string },
-      [string] & { signatory: string },
       boolean,
-      BigNumber,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
       string,
       string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
       [string, string] & { multiaddressReference: string; digest: string }
     ] & {
-      fromSigner: [string] & { signatory: string };
-      toSigner: [string] & { signatory: string };
       escrowed: boolean;
-      validUntil: BigNumber;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
       agreementForm: string;
       agreementFormTemplateId: string;
-      status: BigNumber;
-      created_at: BigNumber;
-      updated_at: BigNumber;
       file: [string, string] & {
         multiaddressReference: string;
         digest: string;
@@ -589,26 +593,30 @@ export class Agreement extends Contract {
     overrides?: CallOverrides
   ): Promise<
     [
-      [string] & { signatory: string },
-      [string] & { signatory: string },
       boolean,
-      BigNumber,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
       string,
       string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
       [string, string] & { multiaddressReference: string; digest: string }
     ] & {
-      fromSigner: [string] & { signatory: string };
-      toSigner: [string] & { signatory: string };
       escrowed: boolean;
-      validUntil: BigNumber;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
       agreementForm: string;
       agreementFormTemplateId: string;
-      status: BigNumber;
-      created_at: BigNumber;
-      updated_at: BigNumber;
       file: [string, string] & {
         multiaddressReference: string;
         digest: string;
@@ -616,10 +624,11 @@ export class Agreement extends Contract {
     }
   >;
 
-  counterPartiesReject(
+  create(
     token: string,
-    agreementId: BigNumberish,
-    validUntil: BigNumberish,
+    validUntilSign: BigNumberish,
+    validUntilSA: BigNumberish,
+    amountSigner: BigNumberish,
     multiaddrReference: string,
     agreementFormTemplateId: BytesLike,
     agreementForm: BytesLike,
@@ -627,10 +636,11 @@ export class Agreement extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "counterPartiesReject(address,uint256,uint256,string,bytes32,bytes,bytes)"(
+  "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)"(
     token: string,
-    agreementId: BigNumberish,
-    validUntil: BigNumberish,
+    validUntilSign: BigNumberish,
+    validUntilSA: BigNumberish,
+    amountSigner: BigNumberish,
     multiaddrReference: string,
     agreementFormTemplateId: BytesLike,
     agreementForm: BytesLike,
@@ -638,103 +648,23 @@ export class Agreement extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  counterPartiesSign(
-    token: string,
+  declined(
     agreementId: BigNumberish,
-    validUntil: BigNumberish,
+    token: string,
     multiaddrReference: string,
-    agreementFormTemplateId: BytesLike,
     agreementForm: BytesLike,
     digest: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "counterPartiesSign(address,uint256,uint256,string,bytes32,bytes,bytes)"(
-    token: string,
+  "declined(uint32,address,string,bytes32,bytes32)"(
     agreementId: BigNumberish,
-    validUntil: BigNumberish,
+    token: string,
     multiaddrReference: string,
-    agreementFormTemplateId: BytesLike,
     agreementForm: BytesLike,
     digest: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  get(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      [string] & { signatory: string },
-      [string] & { signatory: string },
-      boolean,
-      BigNumber,
-      string,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      [string, string] & { multiaddressReference: string; digest: string }
-    ] & {
-      fromSigner: [string] & { signatory: string };
-      toSigner: [string] & { signatory: string };
-      escrowed: boolean;
-      validUntil: BigNumber;
-      agreementForm: string;
-      agreementFormTemplateId: string;
-      status: BigNumber;
-      created_at: BigNumber;
-      updated_at: BigNumber;
-      file: [string, string] & {
-        multiaddressReference: string;
-        digest: string;
-      };
-    }
-  >;
-
-  "get(uint256)"(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      [string] & { signatory: string },
-      [string] & { signatory: string },
-      boolean,
-      BigNumber,
-      string,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      [string, string] & { multiaddressReference: string; digest: string }
-    ] & {
-      fromSigner: [string] & { signatory: string };
-      toSigner: [string] & { signatory: string };
-      escrowed: boolean;
-      validUntil: BigNumber;
-      agreementForm: string;
-      agreementFormTemplateId: string;
-      status: BigNumber;
-      created_at: BigNumber;
-      updated_at: BigNumber;
-      file: [string, string] & {
-        multiaddressReference: string;
-        digest: string;
-      };
-    }
-  >;
-
-  getBalanceToken(
-    token: string,
-    recipient: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  "getBalanceToken(address,address)"(
-    token: string,
-    recipient: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   getFormById(
     agreementId: BigNumberish,
@@ -758,31 +688,44 @@ export class Agreement extends Contract {
 
   "getRecipient()"(overrides?: CallOverrides): Promise<string>;
 
-  has(id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+  hasValidSA(_id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
-  "has(uint256)"(id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+  "hasValidSA(uint256)"(
+    _id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  hasValidToSign(
+    _id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "hasValidToSign(uint256)"(
+    _id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
   "owner()"(overrides?: CallOverrides): Promise<string>;
 
-  partyCreate(
+  pendingSign(
     token: string,
-    validUntil: BigNumberish,
-    counterparty: string,
+    agreementId: BigNumberish,
+    validUntilSign: BigNumberish,
+    validUntilSA: BigNumberish,
     multiaddrReference: string,
-    agreementFormTemplateId: BytesLike,
     agreementForm: BytesLike,
     digest: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "partyCreate(address,uint256,address,string,bytes32,bytes,bytes)"(
+  "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
     token: string,
-    validUntil: BigNumberish,
-    counterparty: string,
+    agreementId: BigNumberish,
+    validUntilSign: BigNumberish,
+    validUntilSA: BigNumberish,
     multiaddrReference: string,
-    agreementFormTemplateId: BytesLike,
     agreementForm: BytesLike,
     digest: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -838,7 +781,49 @@ export class Agreement extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  whiteListed(
+    arg0: BigNumberish,
+    arg1: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, boolean, boolean, number, [string] & { signatory: string }] & {
+      whiteListed: boolean;
+      signed: boolean;
+      creator: boolean;
+      AgreementId: number;
+      peerSigner: [string] & { signatory: string };
+    }
+  >;
+
+  "whiteListed(uint32,address)"(
+    arg0: BigNumberish,
+    arg1: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, boolean, boolean, number, [string] & { signatory: string }] & {
+      whiteListed: boolean;
+      signed: boolean;
+      creator: boolean;
+      AgreementId: number;
+      peerSigner: [string] & { signatory: string };
+    }
+  >;
+
   callStatic: {
+    addWhitelisted(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "addWhitelisted(uint32,uint32,address[])"(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     agreementForms(
       arg0: string,
       arg1: BytesLike,
@@ -856,26 +841,30 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -888,26 +877,30 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<
       [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
         boolean,
-        BigNumber,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
         string,
         string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         [string, string] & { multiaddressReference: string; digest: string }
       ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
         escrowed: boolean;
-        validUntil: BigNumber;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
         agreementForm: string;
         agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
         file: [string, string] & {
           multiaddressReference: string;
           digest: string;
@@ -915,10 +908,11 @@ export class Agreement extends Contract {
       }
     >;
 
-    counterPartiesReject(
+    create(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -926,10 +920,11 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "counterPartiesReject(address,uint256,uint256,string,bytes32,bytes,bytes)"(
+    "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)"(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -937,101 +932,21 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    counterPartiesSign(
-      token: string,
+    declined(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "counterPartiesSign(address,uint256,uint256,string,bytes32,bytes,bytes)"(
-      token: string,
+    "declined(uint32,address,string,bytes32,bytes32)"(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    get(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
-        boolean,
-        BigNumber,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        [string, string] & { multiaddressReference: string; digest: string }
-      ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
-        escrowed: boolean;
-        validUntil: BigNumber;
-        agreementForm: string;
-        agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
-        file: [string, string] & {
-          multiaddressReference: string;
-          digest: string;
-        };
-      }
-    >;
-
-    "get(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [string] & { signatory: string },
-        [string] & { signatory: string },
-        boolean,
-        BigNumber,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        [string, string] & { multiaddressReference: string; digest: string }
-      ] & {
-        fromSigner: [string] & { signatory: string };
-        toSigner: [string] & { signatory: string };
-        escrowed: boolean;
-        validUntil: BigNumber;
-        agreementForm: string;
-        agreementFormTemplateId: string;
-        status: BigNumber;
-        created_at: BigNumber;
-        updated_at: BigNumber;
-        file: [string, string] & {
-          multiaddressReference: string;
-          digest: string;
-        };
-      }
-    >;
-
-    getBalanceToken(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getBalanceToken(address,address)"(
-      token: string,
-      recipient: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1057,10 +972,20 @@ export class Agreement extends Contract {
 
     "getRecipient()"(overrides?: CallOverrides): Promise<string>;
 
-    has(id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+    hasValidSA(_id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
-    "has(uint256)"(
-      id: BigNumberish,
+    "hasValidSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    hasValidToSign(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "hasValidToSign(uint256)"(
+      _id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -1068,23 +993,23 @@ export class Agreement extends Contract {
 
     "owner()"(overrides?: CallOverrides): Promise<string>;
 
-    partyCreate(
+    pendingSign(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "partyCreate(address,uint256,address,string,bytes32,bytes,bytes)"(
+    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: CallOverrides
@@ -1135,6 +1060,34 @@ export class Agreement extends Contract {
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    whiteListed(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, boolean, boolean, number, [string] & { signatory: string }] & {
+        whiteListed: boolean;
+        signed: boolean;
+        creator: boolean;
+        AgreementId: number;
+        peerSigner: [string] & { signatory: string };
+      }
+    >;
+
+    "whiteListed(uint32,address)"(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, boolean, boolean, number, [string] & { signatory: string }] & {
+        whiteListed: boolean;
+        signed: boolean;
+        creator: boolean;
+        AgreementId: number;
+        peerSigner: [string] & { signatory: string };
+      }
+    >;
   };
 
   filters: {
@@ -1194,6 +1147,20 @@ export class Agreement extends Contract {
   };
 
   estimateGas: {
+    addWhitelisted(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "addWhitelisted(uint32,uint32,address[])"(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     agreementForms(
       arg0: string,
       arg1: BytesLike,
@@ -1216,10 +1183,11 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    counterPartiesReject(
+    create(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -1227,10 +1195,11 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "counterPartiesReject(address,uint256,uint256,string,bytes32,bytes,bytes)"(
+    "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)"(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -1238,45 +1207,22 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    counterPartiesSign(
-      token: string,
+    declined(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "counterPartiesSign(address,uint256,uint256,string,bytes32,bytes,bytes)"(
-      token: string,
+    "declined(uint32,address,string,bytes32,bytes32)"(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    get(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "get(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    getBalanceToken(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    "getBalanceToken(address,address)"(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getFormById(
@@ -1301,10 +1247,23 @@ export class Agreement extends Contract {
 
     "getRecipient()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    has(id: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    hasValidSA(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "has(uint256)"(
-      id: BigNumberish,
+    "hasValidSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    hasValidToSign(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "hasValidToSign(uint256)"(
+      _id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1312,23 +1271,23 @@ export class Agreement extends Contract {
 
     "owner()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    partyCreate(
+    pendingSign(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "partyCreate(address,uint256,address,string,bytes32,bytes,bytes)"(
+    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1383,9 +1342,35 @@ export class Agreement extends Contract {
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    whiteListed(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "whiteListed(uint32,address)"(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    addWhitelisted(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "addWhitelisted(uint32,uint32,address[])"(
+      agreementId: BigNumberish,
+      amountSigner: BigNumberish,
+      _addresses: string[],
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     agreementForms(
       arg0: string,
       arg1: BytesLike,
@@ -1408,10 +1393,11 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    counterPartiesReject(
+    create(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -1419,10 +1405,11 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "counterPartiesReject(address,uint256,uint256,string,bytes32,bytes,bytes)"(
+    "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)"(
       token: string,
-      agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
+      amountSigner: BigNumberish,
       multiaddrReference: string,
       agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
@@ -1430,48 +1417,22 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    counterPartiesSign(
-      token: string,
+    declined(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "counterPartiesSign(address,uint256,uint256,string,bytes32,bytes,bytes)"(
-      token: string,
+    "declined(uint32,address,string,bytes32,bytes32)"(
       agreementId: BigNumberish,
-      validUntil: BigNumberish,
+      token: string,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    get(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "get(uint256)"(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getBalanceToken(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getBalanceToken(address,address)"(
-      token: string,
-      recipient: string,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getFormById(
@@ -1496,13 +1457,23 @@ export class Agreement extends Contract {
 
     "getRecipient()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    has(
-      id: BigNumberish,
+    hasValidSA(
+      _id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "has(uint256)"(
-      id: BigNumberish,
+    "hasValidSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    hasValidToSign(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "hasValidToSign(uint256)"(
+      _id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1510,23 +1481,23 @@ export class Agreement extends Contract {
 
     "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    partyCreate(
+    pendingSign(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "partyCreate(address,uint256,address,string,bytes32,bytes,bytes)"(
+    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
       token: string,
-      validUntil: BigNumberish,
-      counterparty: string,
+      agreementId: BigNumberish,
+      validUntilSign: BigNumberish,
+      validUntilSA: BigNumberish,
       multiaddrReference: string,
-      agreementFormTemplateId: BytesLike,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1580,6 +1551,18 @@ export class Agreement extends Contract {
     "transferOwnership(address)"(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    whiteListed(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "whiteListed(uint32,address)"(
+      arg0: BigNumberish,
+      arg1: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

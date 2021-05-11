@@ -90,8 +90,126 @@ const _abi = [
         name: "id",
         type: "uint256",
       },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "formTemplateId",
+        type: "bytes32",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "partySource",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "partyDestination",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "agreementStoredReference",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "status",
+        type: "uint256",
+      },
+    ],
+    name: "AgreementEvents",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "id",
+        type: "uint256",
+      },
     ],
     name: "AgreementModified",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "oldPayment",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newPayment",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "ChangePaymentEvents",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "oldRecipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newRecipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "ChangeRecipientEvents",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "payments",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+    ],
+    name: "PaymentEvents",
     type: "event",
   },
   {
@@ -161,63 +279,66 @@ const _abi = [
     name: "agreements",
     outputs: [
       {
-        components: [
-          {
-            internalType: "address",
-            name: "signatory",
-            type: "address",
-          },
-        ],
-        internalType: "struct AgreementModels.Party",
-        name: "fromSigner",
-        type: "tuple",
-      },
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "signatory",
-            type: "address",
-          },
-        ],
-        internalType: "struct AgreementModels.Party",
-        name: "toSigner",
-        type: "tuple",
-      },
-      {
         internalType: "bool",
         name: "escrowed",
         type: "bool",
       },
       {
-        internalType: "uint256",
-        name: "validUntil",
-        type: "uint256",
+        internalType: "bool",
+        name: "peersSigned",
+        type: "bool",
       },
       {
-        internalType: "bytes",
+        internalType: "uint32",
+        name: "status",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "amountSigner",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "created_at",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "updated_at",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "validUntilSign",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "validUntilSA",
+        type: "uint32",
+      },
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "signatory",
+            type: "address",
+          },
+        ],
+        internalType: "struct AgreementModels.Party",
+        name: "createSigner",
+        type: "tuple",
+      },
+      {
+        internalType: "bytes32",
         name: "agreementForm",
-        type: "bytes",
+        type: "bytes32",
       },
       {
         internalType: "bytes32",
         name: "agreementFormTemplateId",
         type: "bytes32",
-      },
-      {
-        internalType: "uint256",
-        name: "status",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "created_at",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "updated_at",
-        type: "uint256",
       },
       {
         components: [
@@ -227,9 +348,9 @@ const _abi = [
             type: "string",
           },
           {
-            internalType: "bytes",
+            internalType: "bytes32",
             name: "digest",
-            type: "bytes",
+            type: "bytes32",
           },
         ],
         internalType: "struct AgreementModels.Content",
@@ -243,4 +364,4 @@ const _abi = [
 ];
 
 const _bytecode =
-  "0x608060405234801561001057600080fd5b50610405806100206000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063bd14de9614610030575b600080fd5b61004361003e36600461028f565b610062565b6040516100599a999897969594939291906102f2565b60405180910390f35b6001602081815260009283526040928390208351808301855281546001600160a01b0390811682528551938401909552928101549093168152600283015460038401546004850180549495939460ff9093169391926100c090610394565b80601f01602080910402602001604051908101604052809291908181526020018280546100ec90610394565b80156101395780601f1061010e57610100808354040283529160200191610139565b820191906000526020600020905b81548152906001019060200180831161011c57829003601f168201915b5050505050908060050154908060060154908060070154908060080154908060090160405180604001604052908160008201805461017690610394565b80601f01602080910402602001604051908101604052809291908181526020018280546101a290610394565b80156101ef5780601f106101c4576101008083540402835291602001916101ef565b820191906000526020600020905b8154815290600101906020018083116101d257829003601f168201915b5050505050815260200160018201805461020890610394565b80601f016020809104026020016040519081016040528092919081815260200182805461023490610394565b80156102815780601f1061025657610100808354040283529160200191610281565b820191906000526020600020905b81548152906001019060200180831161026457829003601f168201915b50505050508152505090508a565b6000602082840312156102a0578081fd5b5035919050565b60008151808452815b818110156102cc576020818501810151868301820152016102b0565b818111156102dd5782602083870101525b50601f01601f19169290920160200192915050565b8a516001600160a01b0390811682528a51166020820152881515604082015260608101889052610140608082018190526000906103318382018a6102a7565b90508760a08401528660c08401528560e08401528461010084015282810361012084015283516040825261036860408301826102a7565b90506020850151828203602084015261038182826102a7565b9f9e505050505050505050505050505050565b6002810460018216806103a857607f821691505b602082108114156103c957634e487b7160e01b600052602260045260246000fd5b5091905056fea2646970667358221220c0c20f0bb7723256d76afbdd55a7672325e67e4ad9952c8a12296eb86bf698d564736f6c63430008000033";
+  "0x608060405234801561001057600080fd5b50610332806100206000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063bd14de9614610030575b600080fd5b61004361003e3660046101a1565b610064565b60405161005b9c9b9a9998979695949392919061022f565b60405180910390f35b600160208181526000928352604092839020805484519283018552928101546001600160a01b0316825260028101546003820154855180870190965260048301805460ff8088169861010089049091169763ffffffff62010000820481169866010000000000008304821698600160501b8404831698600160701b8504841698600160901b8604851698600160b01b9096049094169692959094919290919082908290610110906102c1565b80601f016020809104026020016040519081016040528092919081815260200182805461013c906102c1565b80156101895780601f1061015e57610100808354040283529160200191610189565b820191906000526020600020905b81548152906001019060200180831161016c57829003601f168201915b5050505050815260200160018201548152505090508c565b6000602082840312156101b2578081fd5b5035919050565b60008151604084528051806040860152825b818110156101e857602081840181015160608884010152016101cb565b818111156101f95783606083880101525b50602093840151938501939093525050601f01601f19160160600190565b516001600160a01b03169052565b63ffffffff169052565b8c151581528b1515602082015263ffffffff8b811660408301528a811660608301528981166080830152881660a0820152600061018061027260c084018a610225565b61027f60e0840189610225565b61028d610100840188610217565b8561012084015284610140840152806101608401526102ae818401856101b9565b9f9e505050505050505050505050505050565b6002810460018216806102d557607f821691505b602082108114156102f657634e487b7160e01b600052602260045260246000fd5b5091905056fea2646970667358221220df0509f2b3ac2bb4a2305bf56114a8777a5ff031d8032e212cf43698c5e5329f64736f6c63430008000033";
