@@ -503,7 +503,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		for (uint8 i = 0; i < amountSigner; i++) {
 			address _address = _addresses[i];
 			if (_address != msg.sender) {
-				whiteListed[agreementId][creator][i.add(1)] =
+				whiteListed[agreementId][creator][uint8(i.add(1))] =
 						WhiteListed ({
 							whiteListed: true,
 							signed:false,

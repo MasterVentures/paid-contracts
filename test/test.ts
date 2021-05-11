@@ -64,12 +64,22 @@ describe("Agreement", function() {
 
 	it("3. Test Create Smart Agreement and Testing different way to get and validate", async () => {
 		const Agreement = await ethers.getContractFactory("Agreement");
+		const Token = await ethers.getContractFactory("ERC20Token");
 		const agreement = await Agreement.deploy();
+		const ERC20 = await Token.deploy();
 
 		const Agreements = await agreement.deployed();
+		const ERC20Token = await ERC20.deployed();
 
 		const party = await accounts[4].getAddress();
-		const counterparty = await accounts[5].getAddress();
+		const peersSigner = [
+			await accounts[5].getAddress(),
+			await accounts[6].getAddress(),
+			await accounts[7].getAddress(),
+			await accounts[8].getAddress(),
+			await accounts[9].getAddress()]
+		console.log("Agreement Address: ", Agreements.address, "ERC20 Address: ", ERC20Token.address);
+		console.log("Creator Address: ", party, "Peers Signer: ", peersSigner);
 	})
 
 });

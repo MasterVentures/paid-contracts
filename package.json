@@ -7,7 +7,7 @@
     "test": "npx hardhat test",
     "generate-types": "npx hardhat typechain",
     "typecheck": "tsc --noEmit",
-    "migrate": "npx hardhat run --network localhost scripts/deploy.js"
+    "migrate": "npx hardhat run --network localhost scripts/deploy.ts"
   },
   "resolutions": {
     "scrypt.js": "0.3.0"

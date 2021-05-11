@@ -24,9 +24,12 @@ async function main() {
   console.log("Accounts:", accounts.map(a => a.address));
 
   const Agreement = await ethers.getContractFactory("Agreement");
+	const Token = await ethers.getContractFactory("ERC20Token");
   const agreement = await Agreement.deploy();
+	const ERC20 = await Token.deploy();
 
   const Agreements = await agreement.deployed();
+	const ERC20Token = await ERC20.deployed();
 
 	// const builder = new ContractImportBuilder();
   // const path = `${__dirname}/../abi-export/agreement.js`;
@@ -43,6 +46,7 @@ async function main() {
   // );
 
 	console.log("Agreements deployed to:", Agreements.address);
+	console.log("ERC20 Address: ", ERC20Token.address )
 }
 
 // We recommend this pattern to be able to use async/await everywhere
