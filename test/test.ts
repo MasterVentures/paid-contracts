@@ -1,13 +1,19 @@
+import { Agreement } from './../typechain/Agreement.d';
+import { Provider } from '@ethersproject/providers';
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
-import  { expect } from "chai";
+import  { expect, assert } from "chai";
+import { Nda } from "../template/nda.html"
+import { WSAEWOULDBLOCK } from 'constants';
 
-describe("Agreement", function() {
 
-	let accounts: Signer[];
+describe("Agreement", () => {
+
+	let accounts: Signer[]
 
 	beforeEach(async function () {
 		accounts = await ethers.getSigners();
+		console.log("Get TimeStamp:", Math.floor((await ethers.provider.getBlock("latest")).timestamp / 1000));
 	});
 
 	//   ** Function SetPayment, SetRecipient, GetPayment, GetRecipient */
@@ -67,9 +73,14 @@ describe("Agreement", function() {
 		const Token = await ethers.getContractFactory("ERC20Token");
 		const agreement = await Agreement.deploy();
 		const ERC20 = await Token.deploy();
+		const payments = '1500000000000000000';
+		const recipient = '0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc';
 
 		const Agreements = await agreement.deployed();
 		const ERC20Token = await ERC20.deployed();
+
+		await Agreements.setPayment(payments);
+		await Agreements.setRecipient(recipient);
 
 		const party = await accounts[4].getAddress();
 		const peersSigner = [
@@ -79,7 +90,56 @@ describe("Agreement", function() {
 			await accounts[8].getAddress(),
 			await accounts[9].getAddress()]
 		console.log("Agreement Address: ", Agreements.address, "ERC20 Address: ", ERC20Token.address);
-		console.log("Creator Address: ", party, "Peers Signer: ", peersSigner);
+		peersSigner.unshift(party);
+		console.log("Peers Signer: ", peersSigner);
+
+		// Add ERC20 Token for all Signer
+		await ERC20Token.mintToWallet(party, '15000000000000000000');
+		await ERC20Token.mintToWallet(peersSigner[0], '15000000000000000000');
+		await ERC20Token.mintToWallet(peersSigner[1], '15000000000000000000');
+		await ERC20Token.mintToWallet(peersSigner[2], '15000000000000000000');
+		await ERC20Token.mintToWallet(peersSigner[3], '15000000000000000000');
+		await ERC20Token.mintToWallet(peersSigner[4], '15000000000000000000');
+		console.log("Verify Balance of ERC20 for Creator: ", (await ERC20Token.balanceOf(peersSigner[0])).toString());
+		console.log("Verify Balance of ERC20 for Peer Signer 1: ", (await ERC20Token.balanceOf(peersSigner[0])).toString());
+		console.log("Verify Balance of ERC20 for Peer Signer 2: ", (await ERC20Token.balanceOf(peersSigner[1])).toString());
+		console.log("Verify Balance of ERC20 for Peer Signer 3: ", (await ERC20Token.balanceOf(peersSigner[2])).toString());
+		console.log("Verify Balance of ERC20 for Peer Signer 4: ", (await ERC20Token.balanceOf(peersSigner[3])).toString());
+		console.log("Verify Balance of ERC20 for Peer Signer 5: ", (await ERC20Token.balanceOf(peersSigner[4])).toString());
+		// Valid Value of Smart Agreements
+		const timestamp = Math.floor((await ethers.provider.getBlock("latest")).timestamp / 1000);
+		const amountSigner = 6;
+		const IPFSAddr:string = "QmaMLRsvmDRCezZe2iebcKWtEzKNjBaQfwcu7mcpdm8eY2";
+		const FormTmplId = ethers.utils.id(Nda);
+		const Form = ethers.utils.id(Nda);
+		const digest:string = "0xD1FE5700000000000000000000000000D1FE5700000000000000000000000000";
+		console.log("Get TimeStamp:", timestamp);
+		// Create a New Smart Agreements
+		await ERC20Token.connect(accounts[4]).increaseAllowance(Agreements.address, payments);
+		const agreementTx =  await Agreements.connect(accounts[4]).create(
+			ERC20Token.address,
+			(timestamp + 1),
+			(timestamp + 5),
+			amountSigner,
+			IPFSAddr,
+			FormTmplId,
+			Form,
+			digest
+		);
+		console.log("Gas Estimate: ", agreementTx.gasLimit.toString());
+		if (agreementTx.gasLimit == null ) {
+			agreementTx.gasLimit = await ethers.provider.estimateGas(agreementTx);
+		}
+		const receipt = await agreementTx.wait();
+		const agreementId = receipt.events[3].args.id.toString();
+		console.log("Smart Agreement: ",(await Agreements.connect(accounts[4]).agreements(agreementId)) );
+		const addWhitelisted = await Agreements.connect(accounts[4]).addWhitelisted(
+			agreementId,
+			amountSigner,
+			peersSigner
+		)
+		const receipt2 = await addWhitelisted.wait();
+		console.log("WhiteListed Creator: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 0)));
 	})
 
 });

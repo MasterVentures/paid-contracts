@@ -2,11 +2,12 @@
 pragma solidity >=0.6.10 <=0.8.4;
 pragma experimental ABIEncoderV2;
 
-// import "@openzeppelin/contracts/GSN/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "hardhat/console.sol";
 import "./AgreementModels.sol";
 
 
@@ -37,7 +38,7 @@ contract Agreement is Context, Ownable, AgreementModels {
     }
 
     // Value of Payment Value
-    uint private _payment;
+    uint256 private _payment;
     // Address to Receive the Payment
     address private _recipient;
     // ID for Smart Agreements
@@ -52,14 +53,15 @@ contract Agreement is Context, Ownable, AgreementModels {
     // Agreement templates - preloaded from migration
     mapping(bytes32 => bytes) agreementTemplates;
 
-    constructor() {}
+    constructor() {
+	}
 
     function getPayment() public view returns (uint) {
         return _payment;
     }
 
     function setPayment(uint payment) public onlyOwner() returns (bool) {
-        require(payment != 0, "Value of Payment are more than zero (0)");
+        require(payment != 0, "ERC20: Value of Payment are more than zero (0)");
         // Old Value
         uint oldPaymentValue = _payment;
         _payment = payment;
@@ -158,8 +160,9 @@ contract Agreement is Context, Ownable, AgreementModels {
 		} else {
 			revert("All Signer and Signed th Smart Agreement");
 		}
+		uint256 allowance = IERC20(token).allowance(msg.sender,address(this));
 		// Must be the signer allow the payment for this Smart Contract
-		require(IERC20(token).allowance(msg.sender,address(this)) >= _payment,"Don't have allowance to pay for PAID services");
+		require(allowance >= _payment,"Don't have allowance to pay for PAID services");
 		uint8 peerSigner = getPeerSigner(agreementId, msg.sender);
 		address creator = agreements[agreementId].createSigner.signatory;
 		require(whiteListed[agreementId][creator][peerSigner].whiteListed, "Signer Don't Whitelisted");
@@ -262,9 +265,9 @@ contract Agreement is Context, Ownable, AgreementModels {
 	 * @param _args[4] update_at uint32 value, indicate update date
 	 * @param _args[5] validUntilSign uint32 value, indicate valid date for signed, after that the Smart Agreement is Expired
 	 * @param _args[6] validUntilSA uint32 value, indicate valid date of the Smart Agreement, After all Peer Signer, signed the Smart Agreement
-	 * @param _address[0] token of token, used for pay the cost of Smart Agreement
-	 * @param _address[1] party of party Creator of Smart Agreement
-	 * @param _address[2] counterPrty of Peer Signer of Smart Agreement (can be any of the Peers Signer)
+	 * @param _address[0] Address of token, used for pay the cost of Smart Agreement
+	 * @param _address[1] Address of party Creator of Smart Agreement
+	 * @param _address[2] counterParty of Peer Signer of Smart Agreement (can be any of the Peers Signer)
 	 * @param multiaddrReference URL into IPFS of the Smart Agreement Template, full filled
 	 * @param agreementFormTemplateId Id of Smart Agreement Template
 	 * @param agreementForm SHA3, of Samrt Agreement Template Full Filled
@@ -316,7 +319,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 				peerSigner: Party({ signatory: _address[1] })
 			});
 			// Payment of PAID Services
-            require(AgreementPayment(_address[0], _address[1]), "Error when Pay PAID Services");
+            require(AgreementPayment(_address[0],_address[1]), "Error when Pay PAID Services");
             // Emit Event when Create Agreements
             emit AgreementEvents(
                 count,
@@ -355,7 +358,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 				peerSigner: Party({ signatory: _address[2] })
 			});
             // Payment of PAID Services
-            require(AgreementPayment(_address[0], _address[2]), "Error when Pay PAID Services");
+            require(AgreementPayment(_address[0],_address[2]), "Error when Pay PAID Services");
             // Emit Event when Counterparty Sign the Agreementes
             emit AgreementEvents(
                 _args[0],
@@ -469,7 +472,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		return true;
 	}
 
-	function getPeerSigner(uint32 _agreementId, address counterParty)
+	function getPeerSigner(uint32 _agreementId, address _counterParty)
 		internal
 		view
 		returns (uint8)
@@ -477,7 +480,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		uint8 amountSigner = uint8(agreements[_agreementId].amountSigner);
 		address creator = agreements[_agreementId].createSigner.signatory;
 		for (uint8 i = 0; i < amountSigner; i++) {
-			if (counterParty == whiteListed[_agreementId][creator][i].peerSigner.signatory) {
+			if (_counterParty == whiteListed[_agreementId][creator][i].peerSigner.signatory) {
 				return i;
 			}
 		}
@@ -496,7 +499,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 			"Can't add Peer Signer's"
 		);
 		require(
-			_addresses.length == amountSigner.sub(uint(1)),
+			_addresses.length == amountSigner,
 			"The number of signing peer is not the same Array length "
 		);
 		address creator = agreements[agreementId].createSigner.signatory;
@@ -513,6 +516,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 						});
 			}
 		}
+		return true;
 	}
 
 
@@ -532,15 +536,14 @@ contract Agreement is Context, Ownable, AgreementModels {
 		return agreements[_id].validUntilSign > uint32(block.timestamp);
 	}
     function AgreementPayment(address token, address sender) private returns (bool) {
-        require(msg.sender == sender, "Sender in not the Same to Sign the Transaction");
         require(_payment <= IERC20(token).balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);
-        IERC20(token).safeTransferFrom(msg.sender, _recipient, _payment);
+        IERC20(token).safeTransferFrom(sender, _recipient, _payment);
         //Emit Event for Payment
         emit PaymentEvents(
             _payment,
             msg.sender,
-            address(token)
+            token
         );
         return true;
     }

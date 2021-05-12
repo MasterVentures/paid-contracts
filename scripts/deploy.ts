@@ -8,7 +8,7 @@ import fs from 'fs';
 // import { ContractImportBuilder } from '../abi-builder/main';
 // import AgreementAbi from '../artifacts/contracts/Agreement.sol/Agreement.json';
 
-async function main() {
+const main = async () => {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
   //

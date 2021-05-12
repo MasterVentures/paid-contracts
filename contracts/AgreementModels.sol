@@ -2,8 +2,6 @@
 pragma solidity >=0.6.10 <=0.8.4;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-
 contract AgreementModels {
 
 	/** ====================== Struct of Smart Agreements ============================*/
