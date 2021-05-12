@@ -139,7 +139,12 @@ describe("Agreement", () => {
 			peersSigner
 		)
 		const receipt2 = await addWhitelisted.wait();
-		console.log("WhiteListed Creator: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 0)));
+		console.log("WhiteListed Creator: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 0))[4][0], "Account: ", (await accounts[4].getAddress()));
+		console.log("WhiteListed Peer 1: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 1))[4][0], "Account: ", (await accounts[5].getAddress()));
+		console.log("WhiteListed Peer 2: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 2))[4][0], "Account: ", (await accounts[6].getAddress()));
+		console.log("WhiteListed Peer 3: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 3))[4][0], "Account: ", (await accounts[7].getAddress()));
+		console.log("WhiteListed Peer 4: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 4))[4][0], "Account: ", (await accounts[8].getAddress()));
+		console.log("WhiteListed Peer 5: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 5))[4][0], "Account: ", (await accounts[9].getAddress()));
 	})
 
 });

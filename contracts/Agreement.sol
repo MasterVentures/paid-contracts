@@ -283,14 +283,14 @@ contract Agreement is Context, Ownable, AgreementModels {
     )
         internal
         returns (
-            uint256
+            uint32
         )
     {
 		uint8 peerSigner = getPeerSigner(_args[1], _address[2]);
 		if ((peerSigner == uint(0)) && (_args[1] != uint(AgreementStatus.CREATE_SMARTAGREEMENT))) {
 			revert("Must be Whitelisted all Peer Signer before!!");
 		}
-        if (_args[1] == uint(AgreementStatus.CREATE_SMARTAGREEMENT)) {
+        if (_args[1] == uint32(AgreementStatus.CREATE_SMARTAGREEMENT)) {
 			// Create Agreement
             count++;
             agreements[count] = AgreementDocument({
@@ -330,7 +330,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 _args[1]
             );
             return count;
-		} else if (_args[1]  == uint(AgreementStatus.PENDING_SIGNATURE)) {
+		} else if (_args[1]  == uint32(AgreementStatus.PENDING_SIGNATURE)) {
 			// Update Agreement
             agreements[_args[0]] = AgreementDocument({
 				escrowed: false,
@@ -369,7 +369,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 _args[1]
             );
             return _args[0];
-        } else if (_args[1]  == uint(AgreementStatus.COMPLETED)) {
+        } else if (_args[1]  == uint32(AgreementStatus.COMPLETED)) {
             agreements[_args[0]] = AgreementDocument({
 				escrowed: false,
 				peersSigned: true,
@@ -407,7 +407,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 _args[1]
             );
             return _args[0];
-        } else if (_args[1] == uint(AgreementStatus.DECLINED)) {
+        } else if (_args[1] == uint32(AgreementStatus.DECLINED)) {
             agreements[_args[0]] = AgreementDocument({
 				escrowed: false,
 				peersSigned: true,
@@ -444,7 +444,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             );
             return _args[0];
         } else {
-            return uint256(0);
+            return uint32(0);
         }
     }
 
@@ -505,8 +505,8 @@ contract Agreement is Context, Ownable, AgreementModels {
 		address creator = agreements[agreementId].createSigner.signatory;
 		for (uint8 i = 0; i < amountSigner; i++) {
 			address _address = _addresses[i];
-			if (_address != msg.sender) {
-				whiteListed[agreementId][creator][uint8(i.add(1))] =
+			if (_address != creator) {
+				whiteListed[agreementId][creator][uint8(i)] =
 						WhiteListed ({
 							whiteListed: true,
 							signed:false,
