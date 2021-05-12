@@ -129,7 +129,7 @@ describe("Agreement", () => {
 		console.log("Gas Estimate: ", agreementTx.gasLimit.toString());
 		if (agreementTx.gasLimit == null ) {
 			agreementTx.gasLimit = await ethers.provider.estimateGas(agreementTx);
-		}
+		};
 		const receipt = await agreementTx.wait();
 		const agreementId = receipt.events[3].args.id.toString();
 		console.log("Smart Agreement: ",(await Agreements.connect(accounts[4]).agreements(agreementId)) );
@@ -137,7 +137,10 @@ describe("Agreement", () => {
 			agreementId,
 			amountSigner,
 			peersSigner
-		)
+		);
+		if (addWhitelisted.gasLimit == null ) {
+			addWhitelisted.gasLimit = await ethers.provider.estimateGas(addWhitelisted);
+		};
 		const receipt2 = await addWhitelisted.wait();
 		console.log("WhiteListed Creator: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 0))[4][0], "Account: ", (await accounts[4].getAddress()));
 		console.log("WhiteListed Peer 1: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 1))[4][0], "Account: ", (await accounts[5].getAddress()));

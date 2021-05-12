@@ -503,6 +503,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 			"The number of signing peer is not the same Array length "
 		);
 		address creator = agreements[agreementId].createSigner.signatory;
+		require(msg.sender == creator, "the Party Creator must be whitelist the Rest Signer's");
 		for (uint8 i = 0; i < amountSigner; i++) {
 			address _address = _addresses[i];
 			if (_address != creator) {
