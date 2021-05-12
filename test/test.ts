@@ -1,10 +1,7 @@
-import { Agreement } from './../typechain/Agreement.d';
-import { Provider } from '@ethersproject/providers';
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
 import  { expect, assert } from "chai";
 import { Nda } from "../template/nda.html"
-import { WSAEWOULDBLOCK } from 'constants';
 
 
 describe("Agreement", () => {
@@ -132,7 +129,16 @@ describe("Agreement", () => {
 		};
 		const receipt = await agreementTx.wait();
 		const agreementId = receipt.events[3].args.id.toString();
-		console.log("Smart Agreement: ",(await Agreements.connect(accounts[4]).agreements(agreementId)) );
+		const agreementCreated = await Agreements.connect(accounts[4]).agreements(agreementId);
+		console.log("Smart Agreement: ", agreementCreated);
+		// Expect and Asserts
+		expect(agreementCreated[1]).to.equal(false);
+		expect(agreementCreated[2]).to.equal(0);
+		expect(agreementCreated[3]).to.equal(amountSigner);
+		expect(agreementCreated[6]).to.equal(timestamp+1);
+		expect(agreementCreated[7]).to.equal(timestamp+5);
+		expect(agreementCreated[8][0]).to.equal(party);
+		expect(agreementCreated[11][0]).to.equal(IPFSAddr);
 		const addWhitelisted = await Agreements.connect(accounts[4]).addWhitelisted(
 			agreementId,
 			amountSigner,
@@ -142,6 +148,14 @@ describe("Agreement", () => {
 			addWhitelisted.gasLimit = await ethers.provider.estimateGas(addWhitelisted);
 		};
 		const receipt2 = await addWhitelisted.wait();
+		// Testing the Account in the Mapping of Whitelisted
+		expect((await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 0))[4][0]).to.equal((await accounts[4].getAddress()));
+		expect((await Agreements.connect(accounts[5]).whiteListed(agreementId, party, 1))[4][0]).to.equal((await accounts[5].getAddress()));
+		expect((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, 2))[4][0]).to.equal((await accounts[6].getAddress()));
+		expect((await Agreements.connect(accounts[7]).whiteListed(agreementId, party, 3))[4][0]).to.equal((await accounts[7].getAddress()));
+		expect((await Agreements.connect(accounts[8]).whiteListed(agreementId, party, 4))[4][0]).to.equal((await accounts[8].getAddress()));
+		expect((await Agreements.connect(accounts[9]).whiteListed(agreementId, party, 5))[4][0]).to.equal((await accounts[9].getAddress()));
+
 		console.log("WhiteListed Creator: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 0))[4][0], "Account: ", (await accounts[4].getAddress()));
 		console.log("WhiteListed Peer 1: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 1))[4][0], "Account: ", (await accounts[5].getAddress()));
 		console.log("WhiteListed Peer 2: ", (await Agreements.connect(accounts[4]).whiteListed(agreementId, party, 2))[4][0], "Account: ", (await accounts[6].getAddress()));
