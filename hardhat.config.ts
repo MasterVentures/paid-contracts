@@ -24,12 +24,7 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 export default {
-	defaultNetwork: "localhost",
 	networks: {
-		localhost: {
-      		url: "http://127.0.0.1:8545",
-			gasPrice: 135000000000
-    	},
 		mainnet: {
 			chainId: 1,
 			url: `https://mainnet.infura.io/v3/${process.env.INFURAKEY}`,
@@ -83,6 +78,7 @@ export default {
 			}
 		},
 		hardhat: {
+			gasPrice: 135000000000
 		}
 	},
 	solidity: {

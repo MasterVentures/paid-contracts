@@ -457,6 +457,37 @@ contract Agreement is Context, Ownable, AgreementModels {
         return true;
     }
 
+	function getAgreementByParty(address _party)
+		public
+		returns (AgreementDocument[] memory smartagree)
+	{
+		uint256 j;
+		for (uint256 i = 0; i < count; i++ ) {
+			if (agreements[i].createSigner.signatory == _party) {
+				smartagree[j] = agreements[i];
+				j++;
+			}
+		}
+		return smartagree;
+	}
+
+	function getAgreementByPeer(address _party, address _peer)
+		public
+		returns (AgreementDocument[] memory Agreements)
+	{
+		for (uint32 i = 0; i < uint32(count); i++ ) {
+			if (agreements[i].createSigner.signatory == _party) {
+				uint32 amountSigner = agreements[i].amountSigner;
+				for (uint8 j = 0; j < uint8(amountSigner); j++) {
+					if (whiteListed[i][_party][j].peerSigner.signatory == _peer) {
+						Agreements[j] = agreements[i];
+						j++;
+					}
+				}
+			}
+		}
+		return Agreements;
+	}
 	function iscompleted(uint32 _agreementId)
 		public
 		view

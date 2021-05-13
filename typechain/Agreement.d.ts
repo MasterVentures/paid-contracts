@@ -25,6 +25,8 @@ interface AgreementInterface extends ethers.utils.Interface {
     "agreements(uint256)": FunctionFragment;
     "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)": FunctionFragment;
     "declined(uint32,address,string,bytes32,bytes32)": FunctionFragment;
+    "getAgreementByParty(address)": FunctionFragment;
+    "getAgreementByPeer(address,address)": FunctionFragment;
     "getPayment()": FunctionFragment;
     "getRecipient()": FunctionFragment;
     "hasValidSA(uint256)": FunctionFragment;
@@ -64,6 +66,14 @@ interface AgreementInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "declined",
     values: [BigNumberish, string, string, BytesLike, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAgreementByParty",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getAgreementByPeer",
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getPayment",
@@ -130,6 +140,14 @@ interface AgreementInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "agreements", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "create", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "declined", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getAgreementByParty",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getAgreementByPeer",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "getPayment", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRecipient",
@@ -355,6 +373,28 @@ export class Agreement extends Contract {
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    getAgreementByParty(
+      _party: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "getAgreementByParty(address)"(
+      _party: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    getAgreementByPeer(
+      _party: string,
+      _peer: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "getAgreementByPeer(address,address)"(
+      _party: string,
+      _peer: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -631,6 +671,28 @@ export class Agreement extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  getAgreementByParty(
+    _party: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "getAgreementByParty(address)"(
+    _party: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  getAgreementByPeer(
+    _party: string,
+    _peer: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "getAgreementByPeer(address,address)"(
+    _party: string,
+    _peer: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
   "getPayment()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -901,6 +963,152 @@ export class Agreement extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getAgreementByParty(
+      _party: string,
+      overrides?: CallOverrides
+    ): Promise<
+      ([
+        boolean,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
+        string,
+        string,
+        [string, string] & { multiaddressReference: string; digest: string }
+      ] & {
+        escrowed: boolean;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
+        agreementForm: string;
+        agreementFormTemplateId: string;
+        file: [string, string] & {
+          multiaddressReference: string;
+          digest: string;
+        };
+      })[]
+    >;
+
+    "getAgreementByParty(address)"(
+      _party: string,
+      overrides?: CallOverrides
+    ): Promise<
+      ([
+        boolean,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
+        string,
+        string,
+        [string, string] & { multiaddressReference: string; digest: string }
+      ] & {
+        escrowed: boolean;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
+        agreementForm: string;
+        agreementFormTemplateId: string;
+        file: [string, string] & {
+          multiaddressReference: string;
+          digest: string;
+        };
+      })[]
+    >;
+
+    getAgreementByPeer(
+      _party: string,
+      _peer: string,
+      overrides?: CallOverrides
+    ): Promise<
+      ([
+        boolean,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
+        string,
+        string,
+        [string, string] & { multiaddressReference: string; digest: string }
+      ] & {
+        escrowed: boolean;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
+        agreementForm: string;
+        agreementFormTemplateId: string;
+        file: [string, string] & {
+          multiaddressReference: string;
+          digest: string;
+        };
+      })[]
+    >;
+
+    "getAgreementByPeer(address,address)"(
+      _party: string,
+      _peer: string,
+      overrides?: CallOverrides
+    ): Promise<
+      ([
+        boolean,
+        boolean,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        [string] & { signatory: string },
+        string,
+        string,
+        [string, string] & { multiaddressReference: string; digest: string }
+      ] & {
+        escrowed: boolean;
+        peersSigned: boolean;
+        status: number;
+        amountSigner: number;
+        created_at: number;
+        updated_at: number;
+        validUntilSign: number;
+        validUntilSA: number;
+        createSigner: [string] & { signatory: string };
+        agreementForm: string;
+        agreementFormTemplateId: string;
+        file: [string, string] & {
+          multiaddressReference: string;
+          digest: string;
+        };
+      })[]
+    >;
+
     getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getPayment()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1162,6 +1370,28 @@ export class Agreement extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    getAgreementByParty(
+      _party: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "getAgreementByParty(address)"(
+      _party: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getAgreementByPeer(
+      _party: string,
+      _peer: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "getAgreementByPeer(address,address)"(
+      _party: string,
+      _peer: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getPayment()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1355,6 +1585,28 @@ export class Agreement extends Contract {
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getAgreementByParty(
+      _party: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "getAgreementByParty(address)"(
+      _party: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getAgreementByPeer(
+      _party: string,
+      _peer: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "getAgreementByPeer(address,address)"(
+      _party: string,
+      _peer: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
