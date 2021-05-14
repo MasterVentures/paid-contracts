@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
 import  { expect, assert } from "chai";
+const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
 import { Nda } from "../template/nda.html"
 
 
@@ -289,6 +290,16 @@ describe("Agreement", () => {
 		agreementUpdated = await Agreements.connect(accounts[6]).agreements(agreementId);
 		console.log("Status of Smart Agreements after Peer Signed 2 Signed: ", agreementUpdated[2])
 		expect(agreementUpdated[2]).to.equal(2);
+		expectRevert.unspecified(Agreements.connect(accounts[6]).pendingSign(
+			ERC20Token.address,
+			agreementId,
+			(timestamp + 10),
+			(timestamp + 15),
+			IPFSAddr,
+			Form,
+			digest
+		), "All Signer and Signed th Smart Agreement");
+		console.log("Run with exit the revert when try to signer again a Smart Agreement");
 	})
 
 });
