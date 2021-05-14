@@ -145,11 +145,11 @@ contract Agreement is Context, Ownable, AgreementModels {
 		AgreementDocument memory doc = agreements[agreementId];
 		// Validate if is Valid to Sign
 		require(
-			doc.status == uint8(AgreementStatus.EXPIRED),
+			doc.status != uint8(AgreementStatus.EXPIRED),
 			"Smart Agreements has Expired"
 		);
 		require(
-			doc.status == uint8(AgreementStatus.DECLINED),
+			doc.status != uint8(AgreementStatus.DECLINED),
 			"Smart Agreements has Declined"
 		);
 		if (!doc.peersSigned) {
@@ -170,8 +170,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 
 		if (iscompleted(agreementId)) {
 			return execute(
-				[
-				agreementId,
+				[agreementId,
 				uint32(AgreementStatus.COMPLETED),
 				doc.amountSigner,
 				doc.created_at,
@@ -286,7 +285,7 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint32
         )
     {
-		uint8 peerSigner = getPeerSigner(_args[1], _address[2]);
+		uint8 peerSigner = getPeerSigner(_args[0], _address[2]);
 		if ((peerSigner == uint(0)) && (_args[1] != uint(AgreementStatus.CREATE_SMARTAGREEMENT))) {
 			revert("Must be Whitelisted all Peer Signer before!!");
 		}
@@ -496,7 +495,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		uint8 amountSigner = uint8(agreements[_agreementId].amountSigner);
 		address creator = agreements[_agreementId].createSigner.signatory;
 		for (uint8 i = 0; i < amountSigner; i++) {
-			if (!whiteListed[_agreementId][creator][i].signed) {
+			if ((!whiteListed[_agreementId][creator][i].signed) && (whiteListed[_agreementId][creator][i].peerSigner.signatory != msg.sender)) {
 				return false;
 			}
 		}
@@ -508,14 +507,16 @@ contract Agreement is Context, Ownable, AgreementModels {
 		view
 		returns (uint8)
 	{
+		uint8 position = 0;
 		uint8 amountSigner = uint8(agreements[_agreementId].amountSigner);
 		address creator = agreements[_agreementId].createSigner.signatory;
 		for (uint8 i = 0; i < amountSigner; i++) {
 			if (_counterParty == whiteListed[_agreementId][creator][i].peerSigner.signatory) {
-				return i;
+				position = i;
+				break;
 			}
 		}
-		return 0;
+		return position;
 	}
 
 	function addWhitelisted (

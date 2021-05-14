@@ -171,7 +171,7 @@ describe("Agreement", () => {
 	//   ** t3. Complete the Signer and verify if is valid*/
 	//   ** t4. Getting a Smart Agreements by Id, with status Completed */
 
-	it("4. Test Create Smart Agreement and Testing different way to get and validate", async () => {
+	it("4. Test Create Agreements, change state to Pending Sign still Complete and Different Method to Testing", async () => {
 		const Agreement = await ethers.getContractFactory("Agreement");
 		const Token = await ethers.getContractFactory("ERC20Token");
 		const agreement = await Agreement.deploy();
@@ -212,8 +212,8 @@ describe("Agreement", () => {
 		await ERC20Token.connect(accounts[4]).increaseAllowance(Agreements.address, payments);
 		const agreementTx =  await Agreements.connect(accounts[4]).create(
 			ERC20Token.address,
-			(timestamp + 1),
-			(timestamp + 5),
+			(timestamp + 10),
+			(timestamp + 15),
 			amountSigner,
 			IPFSAddr,
 			FormTmplId,
@@ -231,8 +231,8 @@ describe("Agreement", () => {
 		expect(agreementCreated[1]).to.equal(false);
 		expect(agreementCreated[2]).to.equal(0);
 		expect(agreementCreated[3]).to.equal(amountSigner);
-		expect(agreementCreated[6]).to.equal(timestamp+1);
-		expect(agreementCreated[7]).to.equal(timestamp+5);
+		expect(agreementCreated[6]).to.equal(timestamp+10);
+		expect(agreementCreated[7]).to.equal(timestamp+15);
 		expect(agreementCreated[8][0]).to.equal(party);
 		expect(agreementCreated[11][0]).to.equal(IPFSAddr);
 		const addWhitelisted = await Agreements.connect(accounts[4]).addWhitelisted(
@@ -249,8 +249,46 @@ describe("Agreement", () => {
 		expect((await Agreements.connect(accounts[5]).whiteListed(agreementId, party, 1))[4][0]).to.equal((await accounts[5].getAddress()));
 		expect((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, 2))[4][0]).to.equal((await accounts[6].getAddress()));
 		// Pending Signer 1
+		console.log("Start Peer Signer 1 ==========================");
 		await ERC20Token.connect(accounts[5]).increaseAllowance(Agreements.address, payments);
-
+		const peerSignerOneTx = await Agreements.connect(accounts[5]).pendingSign(
+			ERC20Token.address,
+			agreementId,
+			(timestamp + 10),
+			(timestamp + 15),
+			IPFSAddr,
+			Form,
+			digest
+		);
+		// if (peerSignerOneTx.gasLimit == null ) {
+		// 	peerSignerOneTx.gasLimit = await ethers.provider.estimateGas(addWhitelisted);
+		// };
+		// Testing the Account in the Mapping of Whitelisted if signed boolean change true
+		expect((await Agreements.connect(accounts[5]).whiteListed(agreementId, party, 0))[2]).to.equal(true);
+		console.log("Peer Signed 1 Signed: ", ((await Agreements.connect(accounts[5]).whiteListed(agreementId, party, 0))[2]))
+		let agreementUpdated = await Agreements.connect(accounts[5]).agreements(agreementId);
+		console.log("Status of Smart Agreements after Peer Signed 1 Signed: ", agreementUpdated[2])
+		expect(agreementUpdated[2]).to.equal(1);
+		// Pending Signer 2
+		await ERC20Token.connect(accounts[6]).increaseAllowance(Agreements.address, payments);
+		const peerSignerTwoTx = await Agreements.connect(accounts[6]).pendingSign(
+			ERC20Token.address,
+			agreementId,
+			(timestamp + 10),
+			(timestamp + 15),
+			IPFSAddr,
+			Form,
+			digest
+		);
+		// if (peerSignerTwoTx.gasLimit == null ) {
+		// 	peerSignerTwoTx.gasLimit = await ethers.provider.estimateGas(addWhitelisted);
+		// };
+		// Testing the Account in the Mapping of Whitelisted if signed boolean change true
+		expect((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, 0))[2]).to.equal(true);
+		console.log("Peer Signed 2 Signed: ", ((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, 0))[2]))
+		agreementUpdated = await Agreements.connect(accounts[6]).agreements(agreementId);
+		console.log("Status of Smart Agreements after Peer Signed 2 Signed: ", agreementUpdated[2])
+		expect(agreementUpdated[2]).to.equal(2);
 	})
 
 });
