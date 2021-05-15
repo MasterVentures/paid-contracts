@@ -208,8 +208,8 @@ contract Agreement is Context, Ownable, AgreementModels {
 
 
     function declined(
-		uint32 agreementId,
 		address token,
+		uint32 agreementId,
 		string memory multiaddrReference,
         bytes32 agreementForm,
         bytes32 digest
@@ -221,11 +221,11 @@ contract Agreement is Context, Ownable, AgreementModels {
     {
 		// Validate if is Valid to Sign
 		require(
-			agreements[agreementId].status == uint8(AgreementStatus.EXPIRED),
+			agreements[agreementId].status != uint8(AgreementStatus.EXPIRED),
 			"Smart Agreements has Expired"
 		);
 		require(
-			agreements[agreementId].status == uint8(AgreementStatus.DECLINED),
+			agreements[agreementId].status != uint8(AgreementStatus.DECLINED),
 			"Smart Agreements has Declined"
 		);
 		if (!agreements[agreementId].peersSigned) {
@@ -310,13 +310,14 @@ contract Agreement is Context, Ownable, AgreementModels {
                 })
             });
 			// Update Whitelist
-			whiteListed[count][_address[1]][0] = WhiteListed({
+			whiteListed[count][_address[1]][peerSigner] = WhiteListed({
 				whiteListed: true,
 				signed:  true,
 				creator: true,
 				AgreementId: count,
 				peerSigner: Party({ signatory: _address[1] })
 			});
+
 			// Payment of PAID Services
             require(AgreementPayment(_address[0],_address[1]), "Error when Pay PAID Services");
             // Emit Event when Create Agreements
@@ -349,13 +350,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 })
             });
 			// Update Whitelist
-			whiteListed[_args[0]][_address[1]][peerSigner] = WhiteListed({
-				whiteListed: true,
-				signed: true,
-				creator: false,
-				AgreementId: _args[0],
-				peerSigner: Party({ signatory: _address[2] })
-			});
+			whiteListed[_args[0]][_address[1]][peerSigner].signed = true;
             // Payment of PAID Services
             require(AgreementPayment(_address[0],_address[2]), "Error when Pay PAID Services");
             // Emit Event when Counterparty Sign the Agreementes
@@ -387,13 +382,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 })
             });
 			// Update Whitelist
-			whiteListed[_args[0]][_address[1]][peerSigner] = WhiteListed({
-				whiteListed: true,
-				signed: true,
-				creator: false,
-				AgreementId: _args[0],
-				peerSigner: Party({ signatory: _address[2] })
-			});
+			whiteListed[_args[0]][_address[1]][peerSigner].signed = true;
             // Payment of PAID Services
             require(AgreementPayment(_address[0], _address[2]), "Error when Pay PAID Services");
             // Emit Event when Counterparty Sign the Agreementes
@@ -425,13 +414,7 @@ contract Agreement is Context, Ownable, AgreementModels {
                 })
             });
 			// Update Whitelist
-			whiteListed[_args[0]][_address[1]][peerSigner] = WhiteListed({
-				whiteListed: true,
-				signed: true,
-				creator: false,
-				AgreementId: _args[0],
-				peerSigner: Party({ signatory: _address[2] })
-			});
+			whiteListed[_args[0]][_address[1]][peerSigner].signed = true;
             // Emit Event when Counterparty Sign the Agreementes
             emit AgreementEvents(
                 _args[0],
@@ -503,7 +486,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 	}
 
 	function getPeerSigner(uint32 _agreementId, address _counterParty)
-		internal
+		public
 		view
 		returns (uint8)
 	{

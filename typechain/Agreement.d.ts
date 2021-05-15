@@ -24,10 +24,11 @@ interface AgreementInterface extends ethers.utils.Interface {
     "addWhitelisted(uint32,uint8,address[])": FunctionFragment;
     "agreements(uint256)": FunctionFragment;
     "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)": FunctionFragment;
-    "declined(uint32,address,string,bytes32,bytes32)": FunctionFragment;
+    "declined(address,uint32,string,bytes32,bytes32)": FunctionFragment;
     "getAgreementByParty(address)": FunctionFragment;
     "getAgreementByPeer(address,address)": FunctionFragment;
     "getPayment()": FunctionFragment;
+    "getPeerSigner(uint32,address)": FunctionFragment;
     "getRecipient()": FunctionFragment;
     "hasValidSA(uint256)": FunctionFragment;
     "hasValidToSign(uint256)": FunctionFragment;
@@ -65,7 +66,7 @@ interface AgreementInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "declined",
-    values: [BigNumberish, string, string, BytesLike, BytesLike]
+    values: [string, BigNumberish, string, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getAgreementByParty",
@@ -78,6 +79,10 @@ interface AgreementInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getPayment",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPeerSigner",
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getRecipient",
@@ -149,6 +154,10 @@ interface AgreementInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getPayment", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPeerSigner",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getRecipient",
     data: BytesLike
@@ -359,17 +368,17 @@ export class Agreement extends Contract {
     ): Promise<ContractTransaction>;
 
     declined(
-      agreementId: BigNumberish,
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "declined(uint32,address,string,bytes32,bytes32)"(
-      agreementId: BigNumberish,
+    "declined(address,uint32,string,bytes32,bytes32)"(
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -401,6 +410,18 @@ export class Agreement extends Contract {
     getPayment(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "getPayment()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    getPeerSigner(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
+    "getPeerSigner(uint32,address)"(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
 
     getRecipient(overrides?: CallOverrides): Promise<[string]>;
 
@@ -654,17 +675,17 @@ export class Agreement extends Contract {
   ): Promise<ContractTransaction>;
 
   declined(
-    agreementId: BigNumberish,
     token: string,
+    agreementId: BigNumberish,
     multiaddrReference: string,
     agreementForm: BytesLike,
     digest: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "declined(uint32,address,string,bytes32,bytes32)"(
-    agreementId: BigNumberish,
+  "declined(address,uint32,string,bytes32,bytes32)"(
     token: string,
+    agreementId: BigNumberish,
     multiaddrReference: string,
     agreementForm: BytesLike,
     digest: BytesLike,
@@ -696,6 +717,18 @@ export class Agreement extends Contract {
   getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
   "getPayment()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  getPeerSigner(
+    _agreementId: BigNumberish,
+    _counterParty: string,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  "getPeerSigner(uint32,address)"(
+    _agreementId: BigNumberish,
+    _counterParty: string,
+    overrides?: CallOverrides
+  ): Promise<number>;
 
   getRecipient(overrides?: CallOverrides): Promise<string>;
 
@@ -946,17 +979,17 @@ export class Agreement extends Contract {
     ): Promise<BigNumber>;
 
     declined(
-      agreementId: BigNumberish,
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "declined(uint32,address,string,bytes32,bytes32)"(
-      agreementId: BigNumberish,
+    "declined(address,uint32,string,bytes32,bytes32)"(
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -1112,6 +1145,18 @@ export class Agreement extends Contract {
     getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getPayment()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getPeerSigner(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
+    "getPeerSigner(uint32,address)"(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     getRecipient(overrides?: CallOverrides): Promise<string>;
 
@@ -1353,17 +1398,17 @@ export class Agreement extends Contract {
     ): Promise<BigNumber>;
 
     declined(
-      agreementId: BigNumberish,
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "declined(uint32,address,string,bytes32,bytes32)"(
-      agreementId: BigNumberish,
+    "declined(address,uint32,string,bytes32,bytes32)"(
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -1395,6 +1440,18 @@ export class Agreement extends Contract {
     getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getPayment()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getPeerSigner(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getPeerSigner(uint32,address)"(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getRecipient(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1571,17 +1628,17 @@ export class Agreement extends Contract {
     ): Promise<PopulatedTransaction>;
 
     declined(
-      agreementId: BigNumberish,
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "declined(uint32,address,string,bytes32,bytes32)"(
-      agreementId: BigNumberish,
+    "declined(address,uint32,string,bytes32,bytes32)"(
       token: string,
+      agreementId: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -1613,6 +1670,18 @@ export class Agreement extends Contract {
     getPayment(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "getPayment()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getPeerSigner(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getPeerSigner(uint32,address)"(
+      _agreementId: BigNumberish,
+      _counterParty: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     getRecipient(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
