@@ -27,7 +27,7 @@ contract Agreement is Context, Ownable, AgreementModels {
         PENDING_SIGNATURE,
         COMPLETED,
 		DECLINED,
-		EXPIRED
+		EXPIRED //IDEA: I guess is better to handle this status by time
         // DISPUTE_INIT,
         // DISPUTE_ACCEPTED,
         // DISPUTE_REJECTED,
@@ -145,16 +145,11 @@ contract Agreement is Context, Ownable, AgreementModels {
 		AgreementDocument memory doc = agreements[agreementId];
 		// Validate if is Valid to Sign
 		require(
-			doc.status != uint8(AgreementStatus.EXPIRED),
-			"Smart Agreements has Expired"
-		);
-		require(
-			doc.status != uint8(AgreementStatus.DECLINED),
+			doc.status != uint32(AgreementStatus.DECLINED),
 			"Smart Agreements has Declined"
 		);
 		if (!doc.peersSigned) {
-			if (validUntilSign >= uint32(block.timestamp)) {
-				doc.status = uint32(AgreementStatus.EXPIRED);
+			if (validUntilSign <= uint32(block.timestamp)) {
 				revert("Time has expired to sign the Smart Agreement");
 			}
 		} else {
@@ -164,7 +159,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 		// Must be the signer allow the payment for this Smart Contract
 		require(allowance >= _payment,"Don't have allowance to pay for PAID services");
 		uint8 peerSigner = getPeerSigner(agreementId, msg.sender);
-		address creator = agreements[agreementId].createSigner.signatory;
+		address creator = doc.createSigner.signatory;
 		require(whiteListed[agreementId][creator][peerSigner].whiteListed, "Signer Don't Whitelisted");
 		require(!whiteListed[agreementId][creator][peerSigner].signed, "Sign was execute, by Signer!!");
 
@@ -186,6 +181,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 				digest
 			);
 		} else {
+			console.log("Entro en Pendig");
 			return execute(
 				[agreementId,
 				uint32(AgreementStatus.PENDING_SIGNATURE),
@@ -219,24 +215,19 @@ contract Agreement is Context, Ownable, AgreementModels {
             uint256
         )
     {
+		AgreementDocument memory doc = agreements[agreementId];
 		// Validate if is Valid to Sign
 		require(
-			agreements[agreementId].status != uint8(AgreementStatus.EXPIRED),
-			"Smart Agreements has Expired"
-		);
-		require(
-			agreements[agreementId].status != uint8(AgreementStatus.DECLINED),
+			doc.status != uint32(AgreementStatus.DECLINED),
 			"Smart Agreements has Declined"
 		);
-		if (!agreements[agreementId].peersSigned) {
-			if (agreements[agreementId].validUntilSign >= uint32(block.timestamp)) {
-				agreements[agreementId].status = uint8(AgreementStatus.EXPIRED);
+		if (!doc.peersSigned) {
+			if (doc.validUntilSign <= uint32(block.timestamp)) {
 				revert("Time has expired to sign the Smart Agreement");
 			}
 		} else {
 			revert("All Signer and Signed th Smart Agreement");
 		}
-        AgreementDocument memory doc = agreements[agreementId];
         return execute(
 			[agreementId,
 			uint32(AgreementStatus.DECLINED),
@@ -286,7 +277,7 @@ contract Agreement is Context, Ownable, AgreementModels {
         )
     {
 		uint8 peerSigner = getPeerSigner(_args[0], _address[2]);
-		if ((peerSigner == uint(0)) && (_args[1] != uint(AgreementStatus.CREATE_SMARTAGREEMENT))) {
+		if ((peerSigner == uint8(0)) && (_args[1] != uint32(AgreementStatus.CREATE_SMARTAGREEMENT))) {
 			revert("Must be Whitelisted all Peer Signer before!!");
 		}
         if (_args[1] == uint32(AgreementStatus.CREATE_SMARTAGREEMENT)) {
@@ -441,6 +432,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 
 	function getAgreementByParty(address _party)
 		public
+		view
 		returns (AgreementDocument[] memory smartagree)
 	{
 		uint256 j;
@@ -455,6 +447,7 @@ contract Agreement is Context, Ownable, AgreementModels {
 
 	function getAgreementByPeer(address _party, address _peer)
 		public
+		view
 		returns (AgreementDocument[] memory Agreements)
 	{
 		for (uint32 i = 0; i < uint32(count); i++ ) {
@@ -551,6 +544,21 @@ contract Agreement is Context, Ownable, AgreementModels {
 		if (agreements[_id].peersSigned) {return true;}
 		return agreements[_id].validUntilSign > uint32(block.timestamp);
 	}
+
+	function SetExpiredToSign(uint256 _id) public onlyOwner() returns (bool) {
+		require(agreements[_id].validUntilSign < uint32(block.timestamp), "Is Valid to Sign");
+		agreements[_id].status = uint32(AgreementStatus.EXPIRED);
+		console.log("Agreement ID Expired: ", _id);
+		console.log("Setting Status Agreement Expired:", agreements[_id].status);
+		return true;
+	}
+
+	function SetExpiredSA(uint256 _id) public onlyOwner() returns (bool) {
+		require(agreements[_id].validUntilSA < uint32(block.timestamp), "Is Valid Smart Agreement");
+		agreements[_id].status = uint32(AgreementStatus.EXPIRED);
+		return true;
+	}
+
     function AgreementPayment(address token, address sender) private returns (bool) {
         require(_payment <= IERC20(token).balanceOf(sender), "Enough Balance for this Operation");
         // token.safeIncreaseAllowance(recipient, amount);

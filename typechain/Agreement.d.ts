@@ -21,6 +21,8 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface AgreementInterface extends ethers.utils.Interface {
   functions: {
+    "SetExpiredSA(uint256)": FunctionFragment;
+    "SetExpiredToSign(uint256)": FunctionFragment;
     "addWhitelisted(uint32,uint8,address[])": FunctionFragment;
     "agreements(uint256)": FunctionFragment;
     "create(address,uint32,uint32,uint32,string,bytes32,bytes32,bytes32)": FunctionFragment;
@@ -43,6 +45,14 @@ interface AgreementInterface extends ethers.utils.Interface {
     "whiteListed(uint32,address,uint8)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "SetExpiredSA",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "SetExpiredToSign",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "addWhitelisted",
     values: [BigNumberish, BigNumberish, string[]]
@@ -138,6 +148,14 @@ interface AgreementInterface extends ethers.utils.Interface {
     values: [BigNumberish, string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "SetExpiredSA",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "SetExpiredToSign",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "addWhitelisted",
     data: BytesLike
@@ -257,6 +275,26 @@ export class Agreement extends Contract {
   interface: AgreementInterface;
 
   functions: {
+    SetExpiredSA(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "SetExpiredSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    SetExpiredToSign(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "SetExpiredToSign(uint256)"(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     addWhitelisted(
       agreementId: BigNumberish,
       amountSigner: BigNumberish,
@@ -387,25 +425,281 @@ export class Agreement extends Contract {
 
     getAgreementByParty(
       _party: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[]
+      ] & {
+        smartagree: ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[];
+      }
+    >;
 
     "getAgreementByParty(address)"(
       _party: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[]
+      ] & {
+        smartagree: ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[];
+      }
+    >;
 
     getAgreementByPeer(
       _party: string,
       _peer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[]
+      ] & {
+        Agreements: ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[];
+      }
+    >;
 
     "getAgreementByPeer(address,address)"(
       _party: string,
       _peer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[]
+      ] & {
+        Agreements: ([
+          boolean,
+          boolean,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          [string] & { signatory: string },
+          string,
+          string,
+          [string, string] & { multiaddressReference: string; digest: string }
+        ] & {
+          escrowed: boolean;
+          peersSigned: boolean;
+          status: number;
+          amountSigner: number;
+          created_at: number;
+          updated_at: number;
+          validUntilSign: number;
+          validUntilSA: number;
+          createSigner: [string] & { signatory: string };
+          agreementForm: string;
+          agreementFormTemplateId: string;
+          file: [string, string] & {
+            multiaddressReference: string;
+            digest: string;
+          };
+        })[];
+      }
+    >;
 
     getPayment(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -564,6 +858,26 @@ export class Agreement extends Contract {
     >;
   };
 
+  SetExpiredSA(
+    _id: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "SetExpiredSA(uint256)"(
+    _id: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  SetExpiredToSign(
+    _id: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "SetExpiredToSign(uint256)"(
+    _id: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   addWhitelisted(
     agreementId: BigNumberish,
     amountSigner: BigNumberish,
@@ -694,25 +1008,149 @@ export class Agreement extends Contract {
 
   getAgreementByParty(
     _party: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<
+    ([
+      boolean,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
+      string,
+      string,
+      [string, string] & { multiaddressReference: string; digest: string }
+    ] & {
+      escrowed: boolean;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
+      agreementForm: string;
+      agreementFormTemplateId: string;
+      file: [string, string] & {
+        multiaddressReference: string;
+        digest: string;
+      };
+    })[]
+  >;
 
   "getAgreementByParty(address)"(
     _party: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<
+    ([
+      boolean,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
+      string,
+      string,
+      [string, string] & { multiaddressReference: string; digest: string }
+    ] & {
+      escrowed: boolean;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
+      agreementForm: string;
+      agreementFormTemplateId: string;
+      file: [string, string] & {
+        multiaddressReference: string;
+        digest: string;
+      };
+    })[]
+  >;
 
   getAgreementByPeer(
     _party: string,
     _peer: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<
+    ([
+      boolean,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
+      string,
+      string,
+      [string, string] & { multiaddressReference: string; digest: string }
+    ] & {
+      escrowed: boolean;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
+      agreementForm: string;
+      agreementFormTemplateId: string;
+      file: [string, string] & {
+        multiaddressReference: string;
+        digest: string;
+      };
+    })[]
+  >;
 
   "getAgreementByPeer(address,address)"(
     _party: string,
     _peer: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<
+    ([
+      boolean,
+      boolean,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      [string] & { signatory: string },
+      string,
+      string,
+      [string, string] & { multiaddressReference: string; digest: string }
+    ] & {
+      escrowed: boolean;
+      peersSigned: boolean;
+      status: number;
+      amountSigner: number;
+      created_at: number;
+      updated_at: number;
+      validUntilSign: number;
+      validUntilSA: number;
+      createSigner: [string] & { signatory: string };
+      agreementForm: string;
+      agreementFormTemplateId: string;
+      file: [string, string] & {
+        multiaddressReference: string;
+        digest: string;
+      };
+    })[]
+  >;
 
   getPayment(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -868,6 +1306,26 @@ export class Agreement extends Contract {
   >;
 
   callStatic: {
+    SetExpiredSA(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "SetExpiredSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    SetExpiredToSign(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "SetExpiredToSign(uint256)"(
+      _id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     addWhitelisted(
       agreementId: BigNumberish,
       amountSigner: BigNumberish,
@@ -1349,6 +1807,26 @@ export class Agreement extends Contract {
   };
 
   estimateGas: {
+    SetExpiredSA(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "SetExpiredSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    SetExpiredToSign(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "SetExpiredToSign(uint256)"(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     addWhitelisted(
       agreementId: BigNumberish,
       amountSigner: BigNumberish,
@@ -1417,24 +1895,24 @@ export class Agreement extends Contract {
 
     getAgreementByParty(
       _party: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     "getAgreementByParty(address)"(
       _party: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getAgreementByPeer(
       _party: string,
       _peer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     "getAgreementByPeer(address,address)"(
       _party: string,
       _peer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getPayment(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1579,6 +2057,26 @@ export class Agreement extends Contract {
   };
 
   populateTransaction: {
+    SetExpiredSA(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "SetExpiredSA(uint256)"(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    SetExpiredToSign(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "SetExpiredToSign(uint256)"(
+      _id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     addWhitelisted(
       agreementId: BigNumberish,
       amountSigner: BigNumberish,
@@ -1647,24 +2145,24 @@ export class Agreement extends Contract {
 
     getAgreementByParty(
       _party: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "getAgreementByParty(address)"(
       _party: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getAgreementByPeer(
       _party: string,
       _peer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "getAgreementByPeer(address,address)"(
       _party: string,
       _peer: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPayment(overrides?: CallOverrides): Promise<PopulatedTransaction>;
