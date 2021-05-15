@@ -36,7 +36,7 @@ interface AgreementInterface extends ethers.utils.Interface {
     "hasValidToSign(uint256)": FunctionFragment;
     "iscompleted(uint32)": FunctionFragment;
     "owner()": FunctionFragment;
-    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)": FunctionFragment;
+    "pendingSign(address,uint32,string,bytes32,bytes32)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setAgreementTemplate(bytes32,bytes)": FunctionFragment;
     "setPayment(uint256)": FunctionFragment;
@@ -113,15 +113,7 @@ interface AgreementInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pendingSign",
-    values: [
-      string,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BytesLike,
-      BytesLike
-    ]
+    values: [string, BigNumberish, string, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -758,19 +750,15 @@ export class Agreement extends Contract {
     pendingSign(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
+    "pendingSign(address,uint32,string,bytes32,bytes32)"(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -1206,19 +1194,15 @@ export class Agreement extends Contract {
   pendingSign(
     token: string,
     agreementId: BigNumberish,
-    validUntilSign: BigNumberish,
-    validUntilSA: BigNumberish,
     multiaddrReference: string,
     agreementForm: BytesLike,
     digest: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
+  "pendingSign(address,uint32,string,bytes32,bytes32)"(
     token: string,
     agreementId: BigNumberish,
-    validUntilSign: BigNumberish,
-    validUntilSA: BigNumberish,
     multiaddrReference: string,
     agreementForm: BytesLike,
     digest: BytesLike,
@@ -1654,19 +1638,15 @@ export class Agreement extends Contract {
     pendingSign(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
+    "pendingSign(address,uint32,string,bytes32,bytes32)"(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -1972,19 +1952,15 @@ export class Agreement extends Contract {
     pendingSign(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
+    "pendingSign(address,uint32,string,bytes32,bytes32)"(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
@@ -2222,19 +2198,15 @@ export class Agreement extends Contract {
     pendingSign(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "pendingSign(address,uint32,uint32,uint32,string,bytes32,bytes32)"(
+    "pendingSign(address,uint32,string,bytes32,bytes32)"(
       token: string,
       agreementId: BigNumberish,
-      validUntilSign: BigNumberish,
-      validUntilSA: BigNumberish,
       multiaddrReference: string,
       agreementForm: BytesLike,
       digest: BytesLike,

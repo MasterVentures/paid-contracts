@@ -291,8 +291,6 @@ describe("Agreement", () => {
 		const peerSignerOneTx = await Agreements.connect(accounts[5]).pendingSign(
 			ERC20Token.address,
 			agreementId,
-			(timestamp2 + 10000),
-			(timestamp2 + 15000),
 			IPFSAddr,
 			Form,
 			digest
@@ -314,8 +312,6 @@ describe("Agreement", () => {
 		const peerSignerTwoTx = await Agreements.connect(accounts[6]).pendingSign(
 			ERC20Token.address,
 			agreementId,
-			(timestamp2 + 20000),
-			(timestamp2 + 25000),
 			IPFSAddr,
 			Form,
 			digest
@@ -337,8 +333,6 @@ describe("Agreement", () => {
 				expectRevert.unspecified(Agreements.connect(accounts[6]).pendingSign(
 					ERC20Token.address,
 					agreementId,
-					(timestamp + 40000),
-					(timestamp + 45000),
 					IPFSAddr,
 					Form,
 					digest
@@ -418,8 +412,6 @@ describe("Agreement", () => {
 		const peerSignerOneTx = await Agreements.connect(accounts[5]).pendingSign(
 			ERC20Token.address,
 			agreementId,
-			(timestamp + 20000),
-			(timestamp + 25000),
 			IPFSAddr,
 			Form,
 			digest
@@ -469,8 +461,6 @@ describe("Agreement", () => {
 				expectRevert.unspecified(Agreements.connect(accounts[7]).pendingSign(
 					ERC20Token.address,
 					agreementId,
-					(timestamp + 20000),
-					(timestamp + 25000),
 					IPFSAddr,
 					Form,
 					digest
@@ -497,8 +487,6 @@ describe("Agreement", () => {
 				expectRevert.unspecified(Agreements.connect(accounts[8]).pendingSign(
 					ERC20Token.address,
 					agreementId,
-					(timestamp + 20000),
-					(timestamp + 25000),
 					IPFSAddr,
 					Form,
 					digest
@@ -525,8 +513,6 @@ describe("Agreement", () => {
 				expectRevert.unspecified(Agreements.connect(accounts[9]).pendingSign(
 					ERC20Token.address,
 					agreementId,
-					(timestamp + 20000),
-					(timestamp + 25000),
 					IPFSAddr,
 					Form,
 					digest
@@ -547,7 +533,16 @@ describe("Agreement", () => {
 
 	});
 
-	it("6. Test Create Agreements, and expired the time before th second signer try to sign the Smart Agreements, Verify all Workflow", async () => {
+	it("6. Travelling in the Time with HardHat", async () => {
+		//Testing HardHat Travelling in time
+		console.log("Get TimeStamp Before:", Math.floor((await ethers.provider.getBlock("latest")).timestamp));
+		const time = Math.floor((await ethers.provider.getBlock("latest")).timestamp) + 1000;
+		await ethers.provider.send('evm_setNextBlockTimestamp', [time]);
+		await ethers.provider.send('evm_mine',[]);
+		console.log("Get TimeStamp After:", Math.floor((await ethers.provider.getBlock("latest")).timestamp));
+	})
+
+	it("7. Test Create Agreements, and expired the time before th second signer try to sign the Smart Agreements, Verify all Workflow", async () => {
 		const Agreement = await ethers.getContractFactory("Agreement");
 		const Token = await ethers.getContractFactory("ERC20Token");
 		const agreement = await Agreement.deploy();
@@ -591,8 +586,8 @@ describe("Agreement", () => {
 		await ERC20Token.connect(accounts[4]).increaseAllowance(Agreements.address, payments);
 		const agreementTx =  await Agreements.connect(accounts[4]).create(
 			ERC20Token.address,
-			(timestamp + 100),
-			(timestamp + 5500),
+			(timestamp + 1500),
+			(timestamp + 5000),
 			amountSigner,
 			IPFSAddr,
 			FormTmplId,
@@ -617,8 +612,6 @@ describe("Agreement", () => {
 		const peerSignerOneTx = await Agreements.connect(accounts[5]).pendingSign(
 			ERC20Token.address,
 			agreementId,
-			(timestamp + 6),
-			(timestamp + 5500),
 			IPFSAddr,
 			Form,
 			digest
@@ -628,7 +621,7 @@ describe("Agreement", () => {
 		const agreementUpdated = await Agreements.connect(accounts[5]).agreements(agreementId);
 		const posPeerSigner = await Agreements.connect(accounts[5]).getPeerSigner(agreementId, (await accounts[5].getAddress()));
 		describe("Evaluation of Changes of Status in the Smart Agreements after create Smart Agreements: ", async () => {
-			it("6.1 Should be the Status and Value Expected in the agreements and whiteListed Mapping (CREATE_SMARTAGREEMENT -> PENDING_SIGNATURE):", async () => {
+			it("7.1 Should be the Status and Value Expected in the agreements and whiteListed Mapping (CREATE_SMARTAGREEMENT -> PENDING_SIGNATURE):", async () => {
 				console.log("Position of PeerSigner: ", posPeerSigner);
 				console.log("Peer Signed 1 Signed: ", ((await Agreements.connect(accounts[5]).whiteListed(agreementId, party, posPeerSigner))[1]));
 				console.log("Status of Smart Agreements after Peer Signed 1 Signed (STATUS.PENDING_SIGNATURE -> 1): ", agreementUpdated[2]);
@@ -637,20 +630,22 @@ describe("Agreement", () => {
 			});
 		});
 
+		const time = Math.floor((await ethers.provider.getBlock("latest")).timestamp) + 1500;
+		await ethers.provider.send('evm_setNextBlockTimestamp', [time]);
+		await ethers.provider.send('evm_mine',[]);
+
 		// Pending Signer 2 (Accept) / Expired
 		console.log("Start Peer Signer 2 (Accept) ==========================");
 		await ERC20Token.connect(accounts[6]).increaseAllowance(Agreements.address, payments);
 		describe("Evaluation of Revert pendingSign() Method, because expired Smart Agreements: ", async () => {
-			it("6.2 Should be Revert pendingSign() Method, because expired Time:", async () => {
-				expectRevert.unspecified(Agreements.connect(accounts[6]).pendingSign(
+			it("7.2 Should be Revert pendingSign() Method, because expired Time:", async () => {
+				expect(Agreements.connect(accounts[6]).pendingSign(
 					ERC20Token.address,
 					agreementId,
-					(timestamp + 6),
-					(timestamp + 5500),
 					IPFSAddr,
 					Form,
 					digest
-				));
+				)).to.be.revertedWith("Time has expired to sign the Smart Agreement");
 			});
 		});
 	
@@ -658,15 +653,15 @@ describe("Agreement", () => {
 		const agreementUpdated22 = await Agreements.connect(accounts[6]).agreements(agreementId);
 		const posPeerSigner22 = await Agreements.connect(accounts[6]).getPeerSigner(agreementId, (await accounts[6].getAddress()));
 		describe("Evaluation of Changes of Status in the Smart Agreements after expired Time: ", async () => {
-			it("6.3 Should be the Status and Value Expected in the agreements and Revert pendingSign() Method, because expired Time:", async () => {
+			it("7.3 Should be the Status and Value Expected in the agreements and Revert pendingSign() Method, because expired Time:", async () => {
 				console.log("Position of PeerSigner: ", posPeerSigner22);
 				console.log("Peer Signed 2 Signed: ", ((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, posPeerSigner22))[1]));
-				console.log("Status of Smart Agreements after Peer Signed 2 Try Signed (STATUS.EXPIRED -> 4): ", agreementUpdated22[2]);
+				console.log("Status of Smart Agreements after Peer Signed 2 Try Signed (STATUS.PENDING_SIGNATURE -> 1): ", agreementUpdated22[2]);
 				expect((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, posPeerSigner22))[1]).to.equal(false);
 				expect(agreementUpdated22[2]).to.equal(1);
 			});
 		});
-
+		// Valid time to Expired
 		const validToSig = await Agreements.connect(accounts[6]).hasValidToSign(agreementId);
 		if (!validToSig) {
 			console.log("Valid to Sign:", validToSig);
@@ -674,7 +669,7 @@ describe("Agreement", () => {
 		};
 		const agreementUpdated23 = await Agreements.connect(accounts[6]).agreements(agreementId);
 		describe("Evaluation of Changes of Status in the Smart Agreements Setting Expired Status: ", async () => {
-			it("6.4 Should be the Status and Value Expected after Verify and Setting Expired Status:", async () => {
+			it("7.4 Should be the Status and Value Expected after Verify and Setting Expired Status:", async () => {
 				console.log("Position of PeerSigner: ", posPeerSigner22);
 				console.log("Peer Signed 2 Signed: ", ((await Agreements.connect(accounts[6]).whiteListed(agreementId, party, posPeerSigner22))[1]));
 				console.log("Status of Smart Agreements after Peer Signed 2 Try Signed (STATUS.EXPIRED -> 4): ", agreementUpdated23[2]);
@@ -683,5 +678,17 @@ describe("Agreement", () => {
 			});
 		});
 
+		describe("Evaluation of Revert pendingSign() Method, because Setting expired Smart Agreements: ", async () => {
+			it("7.5 Should be Revert pendingSign() Method, because Setting expired Time:", async () => {
+				expect(Agreements.connect(accounts[7]).pendingSign(
+					ERC20Token.address,
+					agreementId,
+					IPFSAddr,
+					Form,
+					digest
+				)).to.be.revertedWith("Smart Agreements has Expired");
+			});
+		});
 	});
+
 });

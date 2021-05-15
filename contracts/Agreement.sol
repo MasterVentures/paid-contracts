@@ -131,8 +131,6 @@ contract Agreement is Context, Ownable, AgreementModels {
     function pendingSign(
 		address token,
 		uint32 agreementId,
-		uint32 validUntilSign,
-		uint32 validUntilSA,
 		string memory multiaddrReference,
         bytes32 agreementForm,
         bytes32 digest
@@ -143,13 +141,18 @@ contract Agreement is Context, Ownable, AgreementModels {
         )
     {
 		AgreementDocument memory doc = agreements[agreementId];
-		// Validate if is Valid to Sign
+		// Validate if is Valid to 
+		console.log("Status Pending Before require: ", doc.status);
 		require(
 			doc.status != uint32(AgreementStatus.DECLINED),
 			"Smart Agreements has Declined"
 		);
+		require(
+			doc.status != uint32(AgreementStatus.EXPIRED),
+			"Smart Agreements has Expired"
+		);
 		if (!doc.peersSigned) {
-			if (validUntilSign <= uint32(block.timestamp)) {
+			if (doc.validUntilSign <= uint32(block.timestamp)) {
 				revert("Time has expired to sign the Smart Agreement");
 			}
 		} else {
@@ -170,8 +173,8 @@ contract Agreement is Context, Ownable, AgreementModels {
 				doc.amountSigner,
 				doc.created_at,
 				uint32(block.timestamp),
-				validUntilSign,
-				validUntilSA],
+				doc.validUntilSign,
+				doc.validUntilSA],
 				[token,
 				doc.createSigner.signatory,
 				msg.sender],
@@ -188,8 +191,8 @@ contract Agreement is Context, Ownable, AgreementModels {
 				doc.amountSigner,
 				doc.created_at,
 				uint32(block.timestamp),
-				validUntilSign,
-				validUntilSA],
+				doc.validUntilSign,
+				doc.validUntilSA],
 				[token,
 				doc.createSigner.signatory,
 				msg.sender],
@@ -216,10 +219,14 @@ contract Agreement is Context, Ownable, AgreementModels {
         )
     {
 		AgreementDocument memory doc = agreements[agreementId];
-		// Validate if is Valid to Sign
+		// Validate if is Valid to 
 		require(
 			doc.status != uint32(AgreementStatus.DECLINED),
 			"Smart Agreements has Declined"
+		);
+		require(
+			doc.status != uint32(AgreementStatus.EXPIRED),
+			"Smart Agreements has Expired"
 		);
 		if (!doc.peersSigned) {
 			if (doc.validUntilSign <= uint32(block.timestamp)) {
@@ -548,8 +555,6 @@ contract Agreement is Context, Ownable, AgreementModels {
 	function SetExpiredToSign(uint256 _id) public onlyOwner() returns (bool) {
 		require(agreements[_id].validUntilSign < uint32(block.timestamp), "Is Valid to Sign");
 		agreements[_id].status = uint32(AgreementStatus.EXPIRED);
-		console.log("Agreement ID Expired: ", _id);
-		console.log("Setting Status Agreement Expired:", agreements[_id].status);
 		return true;
 	}
 
