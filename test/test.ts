@@ -458,13 +458,13 @@ describe("Agreement", () => {
 		await ERC20Token.connect(accounts[7]).increaseAllowance(Agreements.address, payments);
 		describe("Evaluation of Changes of Status in the Smart Agreements after one Peer Signer Declined Smart Agreements: ", async () => {
 			it("5.3 Should be the Revert pendingSign Method (STATUS.DECLINED):", async () => {
-				expectRevert.unspecified(Agreements.connect(accounts[7]).pendingSign(
+				expect(Agreements.connect(accounts[7]).pendingSign(
 					ERC20Token.address,
 					agreementId,
 					IPFSAddr,
 					Form,
 					digest
-				));
+				)).to.be.revertedWith("Smart Agreements has Declined");
 			});
 		});
 		const agreementUpdated3 = await Agreements.connect(accounts[7]).agreements(agreementId);
@@ -484,13 +484,13 @@ describe("Agreement", () => {
 		await ERC20Token.connect(accounts[8]).increaseAllowance(Agreements.address, payments);
 		describe("Evaluation of Changes of Status in the Smart Agreements after one Peer Signer Declined Smart Agreements: ", async () => {
 			it("5.5 Should be the Revert pendingSign Method (STATUS.DECLINED):", async () => {
-				expectRevert.unspecified(Agreements.connect(accounts[8]).pendingSign(
+				expect(Agreements.connect(accounts[8]).pendingSign(
 					ERC20Token.address,
 					agreementId,
 					IPFSAddr,
 					Form,
 					digest
-				));
+				)).to.be.revertedWith("Smart Agreements has Declined");
 			});
 		});
 		const agreementUpdated4 = await Agreements.connect(accounts[8]).agreements(agreementId);
@@ -510,13 +510,13 @@ describe("Agreement", () => {
 		await ERC20Token.connect(accounts[9]).increaseAllowance(Agreements.address, payments);
 		describe("Evaluation of Changes of Status in the Smart Agreements after one Peer Signer Declined Smart Agreements: ", async () => {
 			it("5.7 Should be the Revert pendingSign Method (STATUS.DECLINED):", async () => {
-				expectRevert.unspecified(Agreements.connect(accounts[9]).pendingSign(
+				expect(Agreements.connect(accounts[9]).pendingSign(
 					ERC20Token.address,
 					agreementId,
 					IPFSAddr,
 					Form,
 					digest
-				));
+				)).to.be.revertedWith("Smart Agreements has Declined");
 			});
 		});
 		const agreementUpdated5 = await Agreements.connect(accounts[9]).agreements(agreementId);
